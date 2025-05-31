@@ -255,7 +255,7 @@
     .bet-panel { flex-direction: column; }
     .bet-panel > button { min-height: 3.25rem; }
     .rewards { max-height: none; padding-bottom: 2rem; }
-    .rewards > .relative { max-height: 265px !important; }
+    .rewards > .relative { max-height: 355px !important; }
     .mobile-footer { display: flex; }
     .rewards { margin-bottom: 40px; }
   }
