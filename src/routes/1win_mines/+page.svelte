@@ -18,6 +18,7 @@
 	import { enhance } from "$app/forms";
   export let data;
   export let form;
+  form;
   $: readableBalance = data.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   $: bet = 0.2;
   $: traps = 3;
@@ -39,7 +40,7 @@
   }
   function LoopAddReward() {
     rewards = [generateRandomArray(), ...rewards.slice(0, 20)];
-    setTimeout(LoopAddReward, Math.floor(Math.random() * (1500 - 100 + 1)) + 100);
+    setTimeout(LoopAddReward, Math.floor(Math.random() * (1000 - 100 + 1)) + 100);
   }
   onMount(()=>{
     let bgElem = document.querySelector('.minesbgimg');
@@ -181,6 +182,14 @@
           </table>
         </div>
       </div>
+      <div class="mobile-footer hidden fixed z-10 h-[45px] w-full bottom-0 left-0 items-center px-[15px] bg-[#090f1e] text-white">
+        <a href="/" class="flex gap-1.5 items-center mr-auto">
+          <svg width="13" height="13" fill="#ffffff" data-v-62d2d3c0="" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" aria-hidden="true" role="img" class="icon icon-chevron-left-bold sm margin square back-icon back-icon"><path d="M34.52 239.03L228.87 44.69c9.37-9.37 24.57-9.37 33.94 0l22.67 22.67c9.36 9.36 9.37 24.52.04 33.9L131.49 256l154.02 154.75c9.34 9.38 9.32 24.54-.04 33.9l-22.67 22.67c-9.37 9.37-24.57 9.37-33.94 0L34.52 272.97c-9.37-9.37-9.37-24.57 0-33.94z"></path></svg>
+          <span class="text-[14px] mt-[-2px]">Back</span>
+        </a>
+        <span class="mr-[12px] text-[14px] font-bold" style="letter-spacing: -.15px;">$ {readableBalance}</span>
+        <button class="h-[28px] px-[12px] text-[14px] font-semibold rounded-[8px] cursor-pointer" style="background-image: linear-gradient(89deg, rgb(49, 188, 105), rgb(8, 158, 78))">Deposit</button>
+      </div>
     </div>
   </div>
 </div>
@@ -247,5 +256,7 @@
     .bet-panel > button { min-height: 3.25rem; }
     .rewards { max-height: none; padding-bottom: 2rem; }
     .rewards > .relative { max-height: 265px !important; }
+    .mobile-footer { display: flex; }
+    .rewards { margin-bottom: 40px; }
   }
 </style>
