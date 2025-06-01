@@ -11,7 +11,7 @@
   <h1>1Win Clone</h1>
   <h3 class="text-slate-100 text-center text-2xl">-- Balance --</h3>
   <form class="flex relative my-3 max-w-96 w-full mx-auto text-slate-100 text-2xl" method="post" use:enhance>
-    <input class="w-full bg-slate-800 rounded-md px-3 py-1 border border-cyan-600 shadow hover:bg-slate-700 hover:border-cyan-700 outline-2 outline-transparent outline-offset-2 focus:outline-cyan-700 transition ease-out duration-300" type="text" name="balance" value="{readableBalance}">
+    <input class="w-full bg-slate-800 rounded-md px-3 py-1 border border-cyan-600 shadow hover:bg-slate-700 hover:border-cyan-700 outline-2 outline-transparent outline-offset-2 focus:outline-cyan-700 transition ease-out duration-300" type="text" name="balance" bind:value="{readableBalance}">
     <button class="absolute top-0 right-0 h-full aspect-square rounded-r-md flex items-center justify-center bg-cyan-600 hover:bg-cyan-700 transition duration-300 ease-out" type="submit" aria-label="b">
       <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-check-circle" viewBox="0 0 16 16">
         <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
@@ -20,10 +20,10 @@
     </button>
   </form>
   <div>
-    <a class="game" href="/1win_mines">Mines Game</a>
-    <a class="hack" href="/1win_mines_hack">Mines Hack</a>
-    <a class="game !mt-10" href="/1win_aviator">Aviator Game</a>
-    <a class="hack" href="/1win_aviator_hack">Aviator Hack</a>
+    <a data-sveltekit-reload class="game" href="/1win_mines">Mines Game</a>
+    <a data-sveltekit-reload class="hack" href="/1win_mines_hack">Mines Hack</a>
+    <a data-sveltekit-reload class="game !mt-10" href="/1win_aviator">Aviator Game</a>
+    <a data-sveltekit-reload class="hack" href="/1win_aviator_hack">Aviator Hack</a>
   </div>
 </div>
 
