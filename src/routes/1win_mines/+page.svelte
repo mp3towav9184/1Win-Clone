@@ -183,7 +183,7 @@
               if (result.data?.take) {
                 data.balance+=result.data?.take;
                 endGame('take')
-              };
+              }; 
               invalidateAll()
             }}}>
             <div class="basis-2/3 flex bg-[#0a0d2c] rounded-[8px] text-[#f3f3f3] text-[18px]">
