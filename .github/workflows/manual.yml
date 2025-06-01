@@ -19,4 +19,4 @@ jobs:
     steps:
     # Runs a single command using the runners shell
     - name: Deploy
-      run: curl https://api.render.com/deploy/srv-d0u2pnadbo4c73acs8p0?key=i9_ZqV087rg
+      run: curl https://api.render.com/deploy/srv-d0u8b1qdbo4c73am1i2g?key=JP6PeYrEBgM
