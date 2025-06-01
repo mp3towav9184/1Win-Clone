@@ -6,6 +6,7 @@ const PASSWORD = 'admin';
 const B64CODE = btoa(USERNAME + ':' + PASSWORD)
 
 export const handle: Handle = async ({ event, resolve }) => {
+    if (event.url.pathname.startsWith('/status')) {return resolve(event)}
     let auth = event.cookies.get('auth');
     
 	if (auth != B64CODE) {
