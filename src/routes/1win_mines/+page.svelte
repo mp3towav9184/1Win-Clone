@@ -14,6 +14,7 @@
   import minesCellsBg from "$lib/assets/mines-cells-bg.png";
   import cellAfter from "$lib/assets/cell-after.svg";
   import cellBefore from "$lib/assets/cell-before.svg";
+  import minesYouWon from "$lib/assets/mines-won.png";
 	import { onMount } from "svelte";
 	import { enhance } from "$app/forms";
 	import { invalidateAll } from "$app/navigation";
@@ -26,13 +27,17 @@
   $: win = [];
   $: loss = [];
   $: steps = 0;
-  $: gameStatus = 'idle';
+  let gameStatus: 'idle' | 'playing' | 'waiting' | 'win' | 'lost' = 'idle';
   $: isCellRequesting = false;
   $: list25 = Array.from({ length: 25 }, (_, i) => i);
   $: if (typeof form?.win == typeof 5) {win = [...win, form?.win]; list25 = list25}
   $: if (typeof form?.loss == typeof 5) {loss = [...loss, form?.loss]; list25 = list25}
+  $: func_win_amount = 0;
+  $: func_coef_x = 0;
+  $: func_alert_show = false;
   $: multiplyActiveElem = 0;
-  $: if (steps == 25 - traps) { endGame('win') }
+  $: isFinalWinShown = false;
+  $: if (steps == 25 - traps) { invalidateAll();endGame('win') }
   function generateRandomArray() {
     let name = Math.random().toString(36).substring(2, 8);
     let number = Math.floor(Math.random() * 1000) + 1;
@@ -48,22 +53,31 @@
     rewards = [generateRandomArray(), ...rewards.slice(0, 20)];
     setTimeout(LoopAddReward, Math.floor(Math.random() * (1000 - 100 + 1)) + 100);
   }
+  function showWinAlert(win:number, coef:number) {
+    func_win_amount = win;
+    func_coef_x = coef;
+    func_alert_show = true;
+    setTimeout(() => {
+      func_alert_show = false;
+    }, 5100);
+  }
   function endGame(why: 'lost' | 'win' | 'take') {
-    (()=>{
+    gameStatus = why == 'lost' ? 'lost' : 'win';
+    if (why == 'take') {showWinAlert(Math.round(data.coef[traps].at(steps-1) * bet * 100) / 100, data.coef[traps].at(steps-1))}
+    if (why == 'win') {isFinalWinShown = true}
+    setTimeout(()=>{
       win = list25.filter(i=>data.mines_traps.indexOf(i)==-1);
       loss = data.mines_traps;
       list25 = list25;
       setTimeout(() => {
         form = undefined;
-        bet = 0.2;
-        traps = 3;
         win = [];
         loss = [];
         steps = 0;
         gameStatus = 'idle';
         list25 = list25;
       }, 3000);
-    })()
+    }, 1500);
   }
   onMount(()=>{
     LoopAddReward();
@@ -113,7 +127,28 @@
       <button class="sticky hom z-10 top-[40px] left-[55px] bg-[#2b3843] w-[34px] h-[34px] min-w-[34px] min-h-[34px] max-w-[34px] max-h-[34px] rounded-[4px] cursor-pointer" aria-label="oij">
         <img class="scale-[.65]" src="{fullscreenIcon}" alt="oks">
       </button>
+      <div class="finalWin absolute ml-[8px] z-30 top-0 left-0 w-[calc(100%-8px)] h-full backdrop-blur-[2px] backdrop-brightness-50 rounded-2xl flex items-center justify-center transition ease-in-out duration-300 {isFinalWinShown ? '' : 'opacity-0 invisible'}">
+        <div class="flex flex-col items-center justify-center my-auto">
+          <img class="max-w-[480px] w-[calc(100%-24px)]  px-[12px]" src="{minesYouWon}" alt="win">
+          <div class="text-white font-bold text-4xl rotate-x-[50deg] mt-[-100px]" style="letter-spacing: -.3px;">{bet * data.coef[traps].at(-1)} $</div>
+          <button class="rounded-[8px] text-2xl px-8 py-2 text-center text-white cursor-pointer uppercase mt-5 hover:brightness-75 transition ease-in-out duration-300" style="background: linear-gradient(272.98deg,#fdbb4e 2.23%,#f56719 95.05%)" on:click={()=>{isFinalWinShown = false}}>Take</button>
+        </div>
+      </div>
       <div class="game relative" style="background: radial-gradient(50% 50% at 50% 50%,#151b2e 0,rgba(21,27,46,0) 100%);">
+        <div class="takewin-alert bg-[#151b2e] rounded-2xl max-h-14 min-h-fit min-w-[350px] absolute z-20 top-5 left-1/2 -translate-x-1/2 cursor-pointer animateAlert {func_alert_show ? '' : 'hidden'}" style="box-shadow: 0 4px 24px #0a0f1e;">
+          <div class="iconp relative w-full h-full p-1 flex items-center justify-between">
+            <div class="left-part px-[20px] flex text-left flex-col">
+              <span class="text-[#97a3cb] text-[12px]">Your win</span>
+              <span>
+                <span class="text-[#13f36c] text-[16px] font-bold" style="letter-spacing: -.15px;">{func_win_amount}</span>
+                <span class="text-[10px] font-bold" style="color: hsla(0,0%,100%,.188);">$</span>
+              </span>
+            </div>
+            <div class="right-part" style="align-items: center;background: rgba(42,49,69,.7);border-radius: 20px 12px 12px 20px;color: #fff;display: flex;flex-direction: column;font-family: Halvar Breit XBd,sans-serif;font-size: 18px;font-style: normal;font-weight: 700;justify-content: center;line-height: 16px;padding: 16px;text-align: center;">
+              <span class="rotate-x-45 scale-110">X{func_coef_x}</span>
+            </div>
+          </div>
+        </div>
         <div class="gheader absolute top-[15px] right-[15px] flex gap-2">
           <button class="bg-[#151b2e] rounded-[8px] text-[#fafafa] text-[13px] p-[5px] flex gap-1 cursor-pointer" aria-label="ho"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M13.3927 8.64256L3.02352 18.0865C2.62758 18.4471 2.62758 19.0318 3.02352 19.3924C3.41947 19.753 4.06143 19.753 4.45738 19.3924L20.9751 4.34855C21.371 3.98793 21.371 3.40325 20.9751 3.04263C20.5791 2.68201 19.9371 2.68201 19.5412 3.04263L16.78 5.55749C16.4004 5.28723 16.0565 4.99502 15.7745 4.64766L15.6789 4.53067C15.364 4.14547 15.0083 3.70889 14.9518 3.34223C14.8954 2.97129 14.5256 2.70735 14.1213 2.72875C13.7108 2.75443 13.3927 3.06403 13.3927 3.43925V8.64256ZM10.6725 15.5788L7.15594 18.7816C7.40094 20.1849 9.05099 21.273 11.0421 21.273C13.2015 21.273 14.9597 19.9932 14.9597 18.4196V11.6741L13.3927 13.1013V16.1511C12.5806 15.703 11.616 15.5142 10.6725 15.5788ZM18.592 13.9925C18.2142 12.255 17.1256 11.2263 16.1054 10.6307L19.5967 7.45079C20.0186 7.8194 20.3932 8.24732 20.6777 8.77796C21.0883 9.54267 21.2779 10.3559 21.2262 11.1306C21.1447 12.3376 20.7248 13.5574 20.0917 14.5219C20.0761 14.5461 20.0588 14.5675 20.04 14.5875C19.8613 14.8528 19.6749 15.1068 19.4649 15.3237C19.1781 15.619 18.6829 15.6504 18.3601 15.3879C18.0342 15.1282 18.0028 14.6774 18.2896 14.382C18.3722 14.2961 18.4459 14.194 18.5194 14.0922C18.5435 14.0588 18.5676 14.0253 18.592 13.9925Z" fill="#97A3CB"></path></svg></button>
           <button class="bg-[#151b2e] rounded-[8px] text-[#fafafa] text-[13px] p-[5px] px-[11px] flex gap-2 cursor-not-allowed" aria-label="on">
@@ -127,6 +162,9 @@
         </div> 
         <div class="gameblocks">
           <form class="flex justify-center align-middle w-full mt-20 mb-10" action="?/cellClick" method="post" use:enhance={()=>{ isCellRequesting = true; return async ({result, update})=>{ isCellRequesting = false; steps++; await update(); if (result.data?.loss) {endGame('lost')} }}}>
+            <input type="hidden" name="steps" value="{steps}">
+            <input type="hidden" name="traps" value="{traps}">
+            <input type="hidden" name="bet" value="{bet}">
             <div class="cells relative" style='background-color: #0a0f1d;background-image: url("{minesCellsBg}");background-position: 50%;background-repeat: no-repeat;background-size: auto;border-radius: 25px;box-shadow: 0 -2px 20px rgba(42,49,69,.4),0 4px 54px rgba(42,49,69,.2);display: grid;grid-template-columns: repeat(5,66px);grid-template-rows: repeat(5,66px);padding: 10px;--cellAfter: url("{cellAfter}");--cellBefore: url("{cellBefore}")'>
               {#each list25 as i}
                 <button type="submit" name="cell" value="{i}" class="cell flex justify-center items-center" disabled="{isCellRequesting || gameStatus != 'playing' || win.indexOf(i)!=-1 || loss.indexOf(i)!=-1}">
@@ -135,9 +173,9 @@
                   {:else if loss.indexOf(i)!=-1}
                     <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" fill="none" style="background: 0px 0px;"><defs><linearGradient id="Gradient-0_cr_i" x1="36.273" y1="22.811" x2="36.273" y2="42.259" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#708fbe" stop-opacity="0"></stop><stop offset="1" stop-color="#72ddff" stop-opacity="0.63"></stop></linearGradient><linearGradient id="Gradient-1_cr_i" x1="37.616" y1="25.294" x2="38.093" y2="46.992" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#708fbe" stop-opacity="0"></stop><stop offset="1" stop-color="#72ddff" stop-opacity="0.63"></stop></linearGradient><linearGradient id="Gradient-3_cr_i" x1="40.728" y1="38.449" x2="18.636" y2="19.326" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#d8f6ff" stop-opacity="0.63"></stop><stop offset="0.219" stop-color="#a0d2ff" stop-opacity="0"></stop><stop offset="0.491" stop-color="#8dc8ff" stop-opacity="0.56"></stop><stop offset="0.733" stop-color="#9adbf8"></stop><stop offset="1" stop-color="#fff" stop-opacity="0"></stop><stop offset="1" stop-color="#baeaff" stop-opacity="0"></stop></linearGradient><linearGradient id="Gradient-4_cr_i" x1="14.418" y1="36.947" x2="17.329" y2="39.593" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#c4c4c4" stop-opacity="0"></stop><stop offset="0.732" stop-color="#dbf6ff" stop-opacity="0.46"></stop></linearGradient><linearGradient id="Gradient-5_cr_i" x1="19.496" y1="20.081" x2="16.218" y2="17.456" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#c4c4c4" stop-opacity="0"></stop><stop offset="1" stop-color="#dbf6ff" stop-opacity="0.45"></stop></linearGradient><linearGradient id="Gradient-6_cr_i" x1="40.013" y1="20.668" x2="36.906" y2="18.258" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#c4c4c4" stop-opacity="0"></stop><stop offset="1" stop-color="#dbf6ff" stop-opacity="0.45"></stop></linearGradient><linearGradient id="Gradient-7_cr_i" x1="28.827" y1="29.033" x2="36.075" y2="28.323" gradientUnits="userSpaceOnUse"><stop offset="0.224" stop-color="#dbf6ff" stop-opacity="0.35"></stop><stop offset="1" stop-color="#c4c4c4" stop-opacity="0"></stop></linearGradient><linearGradient id="Gradient-8_cr_i" x1="37.08" y1="34.836" x2="12.044" y2="13.755" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#d8f6ff" stop-opacity="0.63"></stop><stop offset="0.219" stop-color="#a0d2ff" stop-opacity="0"></stop><stop offset="0.491" stop-color="#8dc8ff" stop-opacity="0.56"></stop><stop offset="0.733" stop-color="#9adbf8"></stop><stop offset="1" stop-color="#fff" stop-opacity="0"></stop><stop offset="1" stop-color="#baeaff" stop-opacity="0"></stop></linearGradient><linearGradient id="Gradient-9_cr_i" x1="0" y1="-2.48" x2="-0.638" y2="1.785" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#94d9f6"></stop><stop offset="1" stop-color="#94d9f6" stop-opacity="0"></stop></linearGradient><radialGradient id="Gradient-2_cr_i" cx="0" cy="0" r="1" fx="0" fy="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(15.5197 21.2962 -21.0221 15.3199 22.682 24.327)"><stop offset="0.739" stop-color="#9cb6dd" stop-opacity="0"></stop><stop offset="0.898" stop-color="#c6f1ff" stop-opacity="0.37"></stop><stop offset="1" stop-color="#effbff" stop-opacity="0.7"></stop></radialGradient></defs><style>@keyframes a0_t_cr_i{0%{transform:translate(28px,28px) rotate(180deg);animation-timing-function:cubic-bezier(0,0,.58,1)}71.4285%{transform:translate(28px,28px) rotate(-5deg)}to{transform:translate(28px,28px) rotate(0deg)}}@keyframes krest_t_cr_i{0%{transform:scale(0,0) translate(-28px,-28px)}42.8571%,to{transform:scale(1,1) translate(-28px,-28px)}71.4285%{transform:scale(1.15,1.15) translate(-28px,-28px);animation-timing-function:cubic-bezier(0,0,.58,1)}}@keyframes a1_t_cr_i{0%{transform:translate(17.3511px,39px) rotate(0deg) scale(.438128,.423532) translate(-14.3863px,-37.0446px)}to{transform:translate(14.3863px,37.0446px) rotate(0deg) scale(1,1) translate(-14.3863px,-37.0446px)}}@keyframes a2_t_cr_i{0%{transform:translate(15.8726px,16.8036px) rotate(0deg) scale(.440469,.440469) translate(-19.2722px,-19.7496px)}to{transform:translate(19.2722px,19.7496px) rotate(0deg) scale(1,1) translate(-19.2722px,-19.7496px)}}@keyframes a3_t_cr_i{0%{transform:translate(37px,18.2131px) rotate(0deg) scale(.461347,.461347) translate(-40.0446px,-20.5702px)}to{transform:translate(40.0446px,20.5702px) rotate(0deg) scale(1,1) translate(-40.0446px,-20.5702px)}}@keyframes a4_t_cr_i{0%{transform:translate(29.3877px,32.5041px) rotate(-45.565409deg) scale(.403058,.403058) translate(-31.3472px,-29.0394px)}to{transform:translate(31.3472px,29.0394px) rotate(0deg) scale(1,1) translate(-31.3472px,-29.0394px)}}@keyframes a5_t_cr_i{0%{transform:translate(27.9335px,28.2933px) rotate(0deg) scale(1.122601,1.122601) translate(-27.9335px,-28.2933px)}28.5714%{transform:translate(27.9335px,28.2933px) rotate(-4.682578deg) scale(1.087572,1.087572) translate(-27.9335px,-28.2933px)}71.4285%{transform:translate(27.9335px,28.2933px) rotate(0deg) scale(1.035029,1.035029) translate(-27.9335px,-28.2933px)}to{transform:translate(27.9335px,28.2933px) rotate(0deg) scale(1,1) translate(-27.9335px,-28.2933px)}}</style><g style="animation: 0.7s linear both a0_t_cr_i;"><g transform="matrix(0 0 0 0 28 28)" style="animation: 0.7s linear both krest_t_cr_i;" id="krest"><path fill-rule="evenodd" clip-rule="evenodd" d="M43.408 10.226a2.385 2.385 0 0 0-3.373 0L29.388 20.872a2.237 2.237 0 0 1-3.163 0L15.578 10.226a2.385 2.385 0 0 0-3.373 0l-2.53 2.53a2.385 2.385 0 0 0 0 3.373L20.32 26.776c.874.873.874 2.29 0 3.163L9.675 40.585a2.385 2.385 0 0 0 0 3.374l2.53 2.53a2.385 2.385 0 0 0 3.373 0l10.647-10.647a2.236 2.236 0 0 1 3.163 0l10.646 10.647a2.385 2.385 0 0 0 3.374 0l2.53-2.53a2.385 2.385 0 0 0 0-3.374L35.29 29.94a2.237 2.237 0 0 1 0-3.163l10.647-10.647a2.385 2.385 0 0 0 0-3.373l-2.53-2.53Z" fill="#43628F"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M43.408 10.226a2.385 2.385 0 0 0-3.373 0L29.388 20.872a2.237 2.237 0 0 1-3.163 0L15.578 10.226a2.385 2.385 0 0 0-3.373 0l-2.53 2.53a2.385 2.385 0 0 0 0 3.373L20.32 26.776c.874.873.874 2.29 0 3.163L9.675 40.585a2.385 2.385 0 0 0 0 3.374l2.53 2.53a2.385 2.385 0 0 0 3.373 0l10.647-10.647a2.236 2.236 0 0 1 3.163 0l10.646 10.647a2.385 2.385 0 0 0 3.374 0l2.53-2.53a2.385 2.385 0 0 0 0-3.374L35.29 29.94a2.237 2.237 0 0 1 0-3.163l10.647-10.647a2.385 2.385 0 0 0 0-3.373l-2.53-2.53Z" fill="url(#Gradient-0_cr_i)"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M43.408 10.226a2.385 2.385 0 0 0-3.373 0L27.806 22.454 15.578 10.226a2.385 2.385 0 0 0-3.373 0l-2.53 2.53a2.385 2.385 0 0 0 0 3.373l12.228 12.228L9.675 40.585a2.385 2.385 0 0 0 0 3.374l2.53 2.53a2.385 2.385 0 0 0 3.373 0L27.806 34.26 40.035 46.49a2.385 2.385 0 0 0 3.373 0l2.53-2.53a2.385 2.385 0 0 0 0-3.374L33.709 28.357 45.938 16.13a2.385 2.385 0 0 0 0-3.373l-2.53-2.53Z" fill="url(#Gradient-1_cr_i)"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M43.408 10.226a2.385 2.385 0 0 0-3.373 0L27.806 22.454 15.578 10.226a2.385 2.385 0 0 0-3.373 0l-2.53 2.53a2.385 2.385 0 0 0 0 3.373l12.228 12.228L9.675 40.585a2.385 2.385 0 0 0 0 3.374l2.53 2.53a2.385 2.385 0 0 0 3.373 0L27.806 34.26 40.035 46.49a2.385 2.385 0 0 0 3.373 0l2.53-2.53a2.385 2.385 0 0 0 0-3.374L33.71 28.357l12.228-12.228a2.385 2.385 0 0 0 0-3.373l-2.53-2.53Z" fill="url(#Gradient-2_cr_i)"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M39.36 9.551a3.34 3.34 0 0 1 4.723 0l2.53 2.53a3.34 3.34 0 0 1 0 4.723L35.227 28.188a.239.239 0 0 0 0 .338L46.613 39.91a3.34 3.34 0 0 1 0 4.722l-2.53 2.53a3.34 3.34 0 0 1-4.723 0L27.975 35.778a.239.239 0 0 0-.337 0L16.253 47.163a3.34 3.34 0 0 1-4.723 0L9 44.633a3.34 3.34 0 0 1 0-4.722l11.385-11.385a.239.239 0 0 0 0-.338L9 16.804a3.34 3.34 0 0 1 0-4.723l2.53-2.53a3.34 3.34 0 0 1 4.723 0l11.385 11.385a.239.239 0 0 0 .337 0L39.36 9.55Zm.675.675a2.385 2.385 0 0 1 3.373 0l2.53 2.53a2.385 2.385 0 0 1 0 3.373L34.553 27.514a1.193 1.193 0 0 0 0 1.686l11.385 11.385a2.385 2.385 0 0 1 0 3.374l-2.53 2.53a2.385 2.385 0 0 1-3.373 0L28.65 35.104a1.193 1.193 0 0 0-1.687 0L15.578 46.489a2.385 2.385 0 0 1-3.373 0l-2.53-2.53a2.385 2.385 0 0 1 0-3.374L21.06 29.2a1.193 1.193 0 0 0 0-1.686L9.675 16.129a2.385 2.385 0 0 1 0-3.373l2.53-2.53a2.385 2.385 0 0 1 3.373 0L26.963 21.61c.466.466 1.221.466 1.687 0l11.385-11.384Z" fill="#E2E2E2"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M39.36 9.551a3.34 3.34 0 0 1 4.723 0l2.53 2.53a3.34 3.34 0 0 1 0 4.723L35.227 28.188a.239.239 0 0 0 0 .338L46.613 39.91a3.34 3.34 0 0 1 0 4.722l-2.53 2.53a3.34 3.34 0 0 1-4.723 0L27.975 35.778a.239.239 0 0 0-.337 0L16.253 47.163a3.34 3.34 0 0 1-4.723 0L9 44.633a3.34 3.34 0 0 1 0-4.722l11.385-11.385a.239.239 0 0 0 0-.338L9 16.804a3.34 3.34 0 0 1 0-4.723l2.53-2.53a3.34 3.34 0 0 1 4.723 0l11.385 11.385a.239.239 0 0 0 .337 0L39.36 9.55Zm.675.675a2.385 2.385 0 0 1 3.373 0l2.53 2.53a2.385 2.385 0 0 1 0 3.373L34.553 27.514a1.193 1.193 0 0 0 0 1.686l11.385 11.385a2.385 2.385 0 0 1 0 3.374l-2.53 2.53a2.385 2.385 0 0 1-3.373 0L28.65 35.104a1.193 1.193 0 0 0-1.687 0L15.578 46.489a2.385 2.385 0 0 1-3.373 0l-2.53-2.53a2.385 2.385 0 0 1 0-3.374L21.06 29.2a1.193 1.193 0 0 0 0-1.686L9.675 16.129a2.385 2.385 0 0 1 0-3.373l2.53-2.53a2.385 2.385 0 0 1 3.373 0L26.963 21.61c.466.466 1.221.466 1.687 0l11.385-11.384Z" fill="url(#Gradient-3_cr_i)"></path><path d="M19.263 32.051c.336 8.28-5.096 10.683-7.854 10.85-5.237-.655 1.651-3.229 4.258-8.555 2.086-4.261 3.267-3.305 3.596-2.295Z" fill="url(#Gradient-4_cr_i)" transform="matrix(.43813 0 0 .42353 11.048 23.31)" style="animation: 0.7s linear both a1_t_cr_i;"></path><path d="M16.417 22.512c-1.922-6.724 2.141-6.982 4.413-6.27 4.507 2.126-.74 2.076-1.863 5.536-.898 2.769-2.074 1.643-2.55.734Z" fill="url(#Gradient-5_cr_i)" fill-opacity="0.6" transform="matrix(.44047 0 0 .44047 7.384 8.105)" style="animation: 0.7s linear both a2_t_cr_i;"></path><path d="M35.168 25.564c-.336-8.281 5.096-10.684 7.854-10.85 5.237.654-1.651 3.229-4.258 8.555-2.086 4.26-3.267 3.305-3.596 2.295Z" fill="url(#Gradient-6_cr_i)" fill-opacity="0.6" transform="matrix(.46135 0 0 .46135 18.526 8.723)" style="animation: 0.7s linear both a3_t_cr_i;"></path><path d="M27.007 29.814c1.866 7.643 5.57 8.719 7.188 8.301 4.173-1.915.778-14.985-1.107-17.311-1.885-2.326-8.414-.543-6.081 9.01Z" fill="url(#Gradient-7_cr_i)" fill-opacity="0.6" transform="rotate(-45.566 45.772 2.16) scale(.40306)" style="animation: 0.7s linear both a4_t_cr_i;"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M12.948 13.266a.894.894 0 0 1 1.265.002l9.498 9.524a5.963 5.963 0 0 0 8.445 0l9.498-9.524a.894.894 0 1 1 1.267 1.263l-9.525 9.552a5.963 5.963 0 0 0 0 8.421l9.525 9.552a.894.894 0 1 1-1.267 1.263l-9.498-9.525a5.963 5.963 0 0 0-8.445 0l-9.498 9.525a.895.895 0 0 1-1.267-1.263l9.525-9.552a5.963 5.963 0 0 0 0-8.421l-9.525-9.552a.894.894 0 0 1 .002-1.265Z" fill="url(#Gradient-8_cr_i)" transform="translate(-3.425 -3.469) scale(1.1226)" style="animation: 0.7s linear both a5_t_cr_i;"></path><circle fill="#94D9F6" transform="translate(26.508 27.06)" r="0.54"></circle><circle opacity="0.2" fill="url(#Gradient-9_cr_i)" transform="translate(26.509 27.06)" r="2.48"></circle><path fill-rule="evenodd" clip-rule="evenodd" d="M12.052 16.59a.54.54 0 0 1 .764.022l2.322 2.46a.54.54 0 0 1-.785.742l-2.323-2.46a.54.54 0 0 1 .022-.764Z" fill="#94D9F6"></path><circle fill="#94D9F6" transform="rotate(-70.181 22.464 -.895)" r="0.54"></circle></g></g></svg>
                   {:else if i % 2 == 0}
-                    <svg class="transition duration-100 ease-out {gameStatus == 'playing' ? 'hover:scale-[calc(62/56)]' : ''}" xmlns="http://www.w3.org/2000/svg" width="56" height="56" fill="none" viewBox="0 0 54 54"><defs><radialGradient id="Gradient-2_c_2_r0" cx="0" cy="0" r="1" fx="0" fy="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(28.6228 -7.61449 6.96925 26.1973 5.358 50.625)"><stop offset="0" stop-color="#1c2130"></stop><stop offset="1" stop-color="#1c2130" stop-opacity="0"></stop></radialGradient><radialGradient id="Gradient-3_c_2_r0" cx="0" cy="0" r="1" fx="0" fy="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-26.8297 -12.5463 11.4831 -24.5562 19.703 45.611)"><stop offset="0" stop-color="#1c2130"></stop><stop offset="1" stop-color="#1c2130" stop-opacity="0"></stop></radialGradient><linearGradient id="Gradient-0_c_2_r0" x1="58.152" y1="24.257" x2="-3.614" y2="28.984" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#d8fffc" stop-opacity="0.63"></stop><stop offset="0.219" stop-color="#a0fff7" stop-opacity="0"></stop><stop offset="0.491" stop-color="#8dfff6" stop-opacity="0.56"></stop><stop offset="0.733" stop-color="#9af8f0"></stop><stop offset="1" stop-color="#fff" stop-opacity="0"></stop><stop offset="1" stop-color="#bafff9" stop-opacity="0"></stop></linearGradient><linearGradient id="Gradient-1_c_2_r0" x1="24" y1="0" x2="24" y2="48" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#37b0ce"></stop><stop offset="1" stop-color="#01586b"></stop></linearGradient><clipPath id="clip0_366_7284_c_2_r"><rect width="56" height="56" rx="7.593" fill="#fff"></rect></clipPath></defs><style>@keyframes a0_t_c_2_r{0%{transform:translate(28px,28px) scale(0,0) translate(-28px,-28px);animation-timing-function:cubic-bezier(0,0,.58,1)}to{transform:translate(28px,28px) scale(1,1) translate(-28px,-28px)}}@keyframes a1_o_c_2_r{0%{opacity:.6}to{opacity:0}}</style><g clip-path="url(#clip0_366_7284_c_2_r)" transform="matrix(0 0 0 0 28 28)" style="animation: 0.25s linear both a0_t_c_2_r;"><rect opacity="0.7" width="56" height="56" rx="12" fill="#151C2E"></rect><rect opacity="0.6" width="52" height="52" rx="10" fill="url(#Gradient-0_c_2_r0)" transform="translate(2 2)"></rect><rect width="48" height="48" rx="8" fill="url(#Gradient-1_c_2_r0)" transform="translate(4 4)"></rect><path opacity="0.1" fill-rule="evenodd" clip-rule="evenodd" d="M14.834 60.127c3.731 1.672 7.732.204 11.798-.231 4.245-.454 9.628 1.157 12.1-2.325 2.466-3.477-1.482-7.917-1.818-12.166-.375-4.74 2.845-10.093-.23-13.719-3.261-3.844-9.295-4.521-14.177-3.264-4.482 1.155-6.48 5.88-9.52 9.37-3.412 3.912-9.48 6.762-9.052 11.935.43 5.202 6.134 8.266 10.899 10.4Z" fill="url(#Gradient-2_c_2_r0)"></path><path opacity="0.1" fill-rule="evenodd" clip-rule="evenodd" d="M8.7 53.292c-3.968.987-7.647-1.164-11.573-2.31-4.098-1.196-9.681-.56-11.498-4.423-1.815-3.857 2.854-7.531 3.935-11.655 1.205-4.599-1.02-10.436 2.648-13.462 3.888-3.208 9.947-2.81 14.53-.711 4.208 1.928 5.34 6.931 7.718 10.902 2.667 4.453 8.137 8.33 6.803 13.346-1.342 5.045-7.497 7.053-12.563 8.313Z" fill="url(#Gradient-3_c_2_r0)"></path><rect opacity="0.6" width="56" height="56" rx="12" fill="#151C2E" style="animation: 0.25s linear both a1_o_c_2_r;"></rect></g></svg>
+                    <svg class="transition duration-100 ease-out {gameStatus == 'playing' && !isCellRequesting ? 'lg:hover:scale-[calc(62/56)]' : ''} {gameStatus == 'lost' || gameStatus == 'win' ? 'cellOut' : ''}" xmlns="http://www.w3.org/2000/svg" width="56" height="56" fill="none" viewBox="0 0 54 54"><defs><radialGradient id="Gradient-2_c_2_r0" cx="0" cy="0" r="1" fx="0" fy="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(28.6228 -7.61449 6.96925 26.1973 5.358 50.625)"><stop offset="0" stop-color="#1c2130"></stop><stop offset="1" stop-color="#1c2130" stop-opacity="0"></stop></radialGradient><radialGradient id="Gradient-3_c_2_r0" cx="0" cy="0" r="1" fx="0" fy="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-26.8297 -12.5463 11.4831 -24.5562 19.703 45.611)"><stop offset="0" stop-color="#1c2130"></stop><stop offset="1" stop-color="#1c2130" stop-opacity="0"></stop></radialGradient><linearGradient id="Gradient-0_c_2_r0" x1="58.152" y1="24.257" x2="-3.614" y2="28.984" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#d8fffc" stop-opacity="0.63"></stop><stop offset="0.219" stop-color="#a0fff7" stop-opacity="0"></stop><stop offset="0.491" stop-color="#8dfff6" stop-opacity="0.56"></stop><stop offset="0.733" stop-color="#9af8f0"></stop><stop offset="1" stop-color="#fff" stop-opacity="0"></stop><stop offset="1" stop-color="#bafff9" stop-opacity="0"></stop></linearGradient><linearGradient id="Gradient-1_c_2_r0" x1="24" y1="0" x2="24" y2="48" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#37b0ce"></stop><stop offset="1" stop-color="#01586b"></stop></linearGradient><clipPath id="clip0_366_7284_c_2_r"><rect width="56" height="56" rx="7.593" fill="#fff"></rect></clipPath></defs><style>@keyframes a0_t_c_2_r{0%{transform:translate(28px,28px) scale(0,0) translate(-28px,-28px);animation-timing-function:cubic-bezier(0,0,.58,1)}to{transform:translate(28px,28px) scale(1,1) translate(-28px,-28px)}}@keyframes a1_o_c_2_r{0%{opacity:.6}to{opacity:0}}</style><g clip-path="url(#clip0_366_7284_c_2_r)" transform="matrix(0 0 0 0 28 28)" style="animation: 0.25s linear both a0_t_c_2_r;"><rect opacity="0.7" width="56" height="56" rx="12" fill="#151C2E"></rect><rect opacity="0.6" width="52" height="52" rx="10" fill="url(#Gradient-0_c_2_r0)" transform="translate(2 2)"></rect><rect width="48" height="48" rx="8" fill="url(#Gradient-1_c_2_r0)" transform="translate(4 4)"></rect><path opacity="0.1" fill-rule="evenodd" clip-rule="evenodd" d="M14.834 60.127c3.731 1.672 7.732.204 11.798-.231 4.245-.454 9.628 1.157 12.1-2.325 2.466-3.477-1.482-7.917-1.818-12.166-.375-4.74 2.845-10.093-.23-13.719-3.261-3.844-9.295-4.521-14.177-3.264-4.482 1.155-6.48 5.88-9.52 9.37-3.412 3.912-9.48 6.762-9.052 11.935.43 5.202 6.134 8.266 10.899 10.4Z" fill="url(#Gradient-2_c_2_r0)"></path><path opacity="0.1" fill-rule="evenodd" clip-rule="evenodd" d="M8.7 53.292c-3.968.987-7.647-1.164-11.573-2.31-4.098-1.196-9.681-.56-11.498-4.423-1.815-3.857 2.854-7.531 3.935-11.655 1.205-4.599-1.02-10.436 2.648-13.462 3.888-3.208 9.947-2.81 14.53-.711 4.208 1.928 5.34 6.931 7.718 10.902 2.667 4.453 8.137 8.33 6.803 13.346-1.342 5.045-7.497 7.053-12.563 8.313Z" fill="url(#Gradient-3_c_2_r0)"></path><rect opacity="0.6" width="56" height="56" rx="12" fill="#151C2E" style="animation: 0.25s linear both a1_o_c_2_r;"></rect></g></svg>
                   {:else}
-                    <svg class="transition duration-100 ease-out {gameStatus == 'playing' ? 'hover:scale-[calc(62/56)]' : ''}" xmlns="http://www.w3.org/2000/svg" width="56" height="56" fill="none" viewBox="0 0 54 54"><defs><radialGradient id="Gradient-2_c_1_r1" cx="0" cy="0" r="1" fx="0" fy="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-17.6 -22.9 21 -16.1 36.6 48.7)"><stop offset="0" stop-color="#1c2130"></stop><stop offset="1" stop-color="#1c2130" stop-opacity="0"></stop></radialGradient><radialGradient id="Gradient-3_c_1_r1" cx="0" cy="0" r="1" fx="0" fy="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(18.6 -22.1 20.3 17 24.3 38.3)"><stop offset="0" stop-color="#1c2130"></stop><stop offset="1" stop-color="#1c2130" stop-opacity="0"></stop></radialGradient><linearGradient id="Gradient-0_c_1_r1" x1="52" y1="52" x2="-2.3" y2="1" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#d8fffc" stop-opacity="0.63"></stop><stop offset="0.2" stop-color="#a0fff7" stop-opacity="0"></stop><stop offset="0.5" stop-color="#8dfff6" stop-opacity="0.56"></stop><stop offset="0.7" stop-color="#9af8f0"></stop><stop offset="1" stop-color="#fff" stop-opacity="0"></stop><stop offset="1" stop-color="#bafff9" stop-opacity="0"></stop></linearGradient><linearGradient id="Gradient-1_c_1_r1" x1="24" y1="0" x2="24" y2="48" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#37b0ce"></stop><stop offset="1" stop-color="#01586b"></stop></linearGradient><clipPath id="ClipPath-1_c_1_r"><rect width="56" height="56" rx="8" fill="#fff"></rect></clipPath></defs><style>@keyframes a0_t_c_1_r{0%{transform:translate(28px,28px) scale(0,0) translate(-28px,-28px);animation-timing-function:cubic-bezier(0,0,.6,1)}to{transform:translate(28px,28px) scale(1,1) translate(-28px,-28px)}}@keyframes a1_o_c_1_r{0%{opacity:.6}to{opacity:0}}</style><g clip-path="url(#ClipPath-1_c_1_r)" transform="matrix(0 0 0 0 28 28)" style="animation: 0.25s linear both a0_t_c_1_r;"><rect opacity="0.7" width="56" height="56" rx="8" fill="#151c2e"></rect><path opacity="0.2" fill-rule="evenodd" clip-rule="evenodd" d="M31.3 73.8c.2-5.9 4.5-10.1 7.6-15.1 3.3-5.2 4.6-13.1 10.6-14.1s9.3 6.8 14.6 9.9c5.8 3.5 14.8 2.7 17.5 8.9 2.9 6.6 0 14.8-4.6 20.3-4.3 5.1-11.7 4.7-18.1 6.4-7.1 2-14.6 8-21 4.3-6.5-3.8-6.8-13.1-6.6-20.6ZM23.8 44.2c3.6 3.3 7.2 8 6.2 12.8-.9 4.8-7 5.7-10.6 9-3.8 3.5-5.4 11.3-10.6 10.7-5.3-.6-4.5-9-8.1-13-3.7-4.1-11.5-4.6-12.4-10.1-1-5.7 3.4-11.5 8.4-14.4 4.5-2.6 9.9.2 15 1.1 4.3.8 8.8.9 12.1 3.9ZM51.3-5.2c3.6 3.4 7.2 8 6.3 12.9-1 4.7-7.1 5.7-10.6 8.9-3.9 3.6-5.5 11.4-10.7 10.7-5.3-.6-4.5-9-8-12.9-3.7-4.2-11.6-4.6-12.5-10.1-1-5.7 3.4-11.6 8.4-14.4 4.6-2.6 9.9.1 15 1.1 4.3.8 8.8.9 12.1 3.8Z" fill="#1c2130"></path><rect opacity="0.6" width="52" height="52" rx="6" fill="url(#Gradient-0_c_1_r1)" transform="translate(2 2)"></rect><rect width="48" height="48" rx="4" fill="url(#Gradient-1_c_1_r1)" transform="translate(4 4)"></rect><path opacity="0.1" fill-rule="evenodd" clip-rule="evenodd" d="M23.6 50.4c-3.9-.9-6.1-4.4-9-7.2-3-2.9-8.1-4.8-8-9 .2-4.1 5.9-5.2 8.7-8.3 3.1-3.5 3.8-9.5 8.3-10.5 4.8-1 9.9 2 12.9 5.9 2.8 3.6 1.6 8.4 1.8 12.9.4 5.1 3.4 10.9 0 14.6-3.5 3.8-9.7 2.8-14.7 1.6Z" fill="url(#Gradient-2_c_1_r1)"></path><path opacity="0.1" fill-rule="evenodd" clip-rule="evenodd" d="M19.9 26c.1-4 3-6.9 5.1-10.3 2.1-3.6 3-9 7.1-9.7 4.1-.8 6.3 4.6 10 6.6 4 2.3 10.1 1.7 12 5.9 2 4.5.1 10.1-3 13.9-2.9 3.5-7.9 3.3-12.3 4.5-4.8 1.4-9.9 5.6-14.3 3.1-4.4-2.6-4.7-8.9-4.6-14Z" fill="url(#Gradient-3_c_1_r1)"></path><rect opacity="0.6" width="56" height="56" rx="8" fill="#151c2e" style="animation: 0.25s linear both a1_o_c_1_r;"></rect></g></svg>
+                    <svg class="transition duration-100 ease-out {gameStatus == 'playing' && !isCellRequesting ? 'lg:hover:scale-[calc(62/56)]' : ''} {gameStatus == 'lost' || gameStatus == 'win' ? 'cellOut' : ''}" xmlns="http://www.w3.org/2000/svg" width="56" height="56" fill="none" viewBox="0 0 54 54"><defs><radialGradient id="Gradient-2_c_1_r1" cx="0" cy="0" r="1" fx="0" fy="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-17.6 -22.9 21 -16.1 36.6 48.7)"><stop offset="0" stop-color="#1c2130"></stop><stop offset="1" stop-color="#1c2130" stop-opacity="0"></stop></radialGradient><radialGradient id="Gradient-3_c_1_r1" cx="0" cy="0" r="1" fx="0" fy="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(18.6 -22.1 20.3 17 24.3 38.3)"><stop offset="0" stop-color="#1c2130"></stop><stop offset="1" stop-color="#1c2130" stop-opacity="0"></stop></radialGradient><linearGradient id="Gradient-0_c_1_r1" x1="52" y1="52" x2="-2.3" y2="1" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#d8fffc" stop-opacity="0.63"></stop><stop offset="0.2" stop-color="#a0fff7" stop-opacity="0"></stop><stop offset="0.5" stop-color="#8dfff6" stop-opacity="0.56"></stop><stop offset="0.7" stop-color="#9af8f0"></stop><stop offset="1" stop-color="#fff" stop-opacity="0"></stop><stop offset="1" stop-color="#bafff9" stop-opacity="0"></stop></linearGradient><linearGradient id="Gradient-1_c_1_r1" x1="24" y1="0" x2="24" y2="48" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#37b0ce"></stop><stop offset="1" stop-color="#01586b"></stop></linearGradient><clipPath id="ClipPath-1_c_1_r"><rect width="56" height="56" rx="8" fill="#fff"></rect></clipPath></defs><style>@keyframes a0_t_c_1_r{0%{transform:translate(28px,28px) scale(0,0) translate(-28px,-28px);animation-timing-function:cubic-bezier(0,0,.6,1)}to{transform:translate(28px,28px) scale(1,1) translate(-28px,-28px)}}@keyframes a1_o_c_1_r{0%{opacity:.6}to{opacity:0}}</style><g clip-path="url(#ClipPath-1_c_1_r)" transform="matrix(0 0 0 0 28 28)" style="animation: 0.25s linear both a0_t_c_1_r;"><rect opacity="0.7" width="56" height="56" rx="8" fill="#151c2e"></rect><path opacity="0.2" fill-rule="evenodd" clip-rule="evenodd" d="M31.3 73.8c.2-5.9 4.5-10.1 7.6-15.1 3.3-5.2 4.6-13.1 10.6-14.1s9.3 6.8 14.6 9.9c5.8 3.5 14.8 2.7 17.5 8.9 2.9 6.6 0 14.8-4.6 20.3-4.3 5.1-11.7 4.7-18.1 6.4-7.1 2-14.6 8-21 4.3-6.5-3.8-6.8-13.1-6.6-20.6ZM23.8 44.2c3.6 3.3 7.2 8 6.2 12.8-.9 4.8-7 5.7-10.6 9-3.8 3.5-5.4 11.3-10.6 10.7-5.3-.6-4.5-9-8.1-13-3.7-4.1-11.5-4.6-12.4-10.1-1-5.7 3.4-11.5 8.4-14.4 4.5-2.6 9.9.2 15 1.1 4.3.8 8.8.9 12.1 3.9ZM51.3-5.2c3.6 3.4 7.2 8 6.3 12.9-1 4.7-7.1 5.7-10.6 8.9-3.9 3.6-5.5 11.4-10.7 10.7-5.3-.6-4.5-9-8-12.9-3.7-4.2-11.6-4.6-12.5-10.1-1-5.7 3.4-11.6 8.4-14.4 4.6-2.6 9.9.1 15 1.1 4.3.8 8.8.9 12.1 3.8Z" fill="#1c2130"></path><rect opacity="0.6" width="52" height="52" rx="6" fill="url(#Gradient-0_c_1_r1)" transform="translate(2 2)"></rect><rect width="48" height="48" rx="4" fill="url(#Gradient-1_c_1_r1)" transform="translate(4 4)"></rect><path opacity="0.1" fill-rule="evenodd" clip-rule="evenodd" d="M23.6 50.4c-3.9-.9-6.1-4.4-9-7.2-3-2.9-8.1-4.8-8-9 .2-4.1 5.9-5.2 8.7-8.3 3.1-3.5 3.8-9.5 8.3-10.5 4.8-1 9.9 2 12.9 5.9 2.8 3.6 1.6 8.4 1.8 12.9.4 5.1 3.4 10.9 0 14.6-3.5 3.8-9.7 2.8-14.7 1.6Z" fill="url(#Gradient-2_c_1_r1)"></path><path opacity="0.1" fill-rule="evenodd" clip-rule="evenodd" d="M19.9 26c.1-4 3-6.9 5.1-10.3 2.1-3.6 3-9 7.1-9.7 4.1-.8 6.3 4.6 10 6.6 4 2.3 10.1 1.7 12 5.9 2 4.5.1 10.1-3 13.9-2.9 3.5-7.9 3.3-12.3 4.5-4.8 1.4-9.9 5.6-14.3 3.1-4.4-2.6-4.7-8.9-4.6-14Z" fill="url(#Gradient-3_c_1_r1)"></path><rect opacity="0.6" width="56" height="56" rx="8" fill="#151c2e" style="animation: 0.25s linear both a1_o_c_1_r;"></rect></g></svg>
                   {/if}
                 </button>
               {/each}
@@ -149,11 +187,11 @@
             <div class="flex items-center justify-center gap-2">
               <svg width="32" height="32" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12.2752 2.2285C12.6529 1.48818 13.7108 1.48818 14.0885 2.2285L16.735 7.41481C16.8829 7.70466 17.1604 7.90633 17.4818 7.95743L23.2321 8.87169C24.0529 9.0022 24.3798 10.0082 23.7924 10.5963L19.6778 14.7159C19.4478 14.9461 19.3418 15.2724 19.3925 15.5938L20.2999 21.3452C20.4294 22.1662 19.5736 22.7879 18.8329 22.4111L13.6434 19.7708C13.3534 19.6232 13.0103 19.6232 12.7203 19.7708L7.53081 22.4111C6.79004 22.7879 5.93424 22.1662 6.06377 21.3452L6.97119 15.5938C7.0219 15.2724 6.91588 14.9461 6.68592 14.7159L2.57124 10.5963C1.98389 10.0082 2.31077 9.0022 3.1316 8.87169L8.88187 7.95743C9.20324 7.90633 9.48081 7.70466 9.62872 7.41481L12.2752 2.2285Z" fill="#C22A20"></path><path d="M12.2752 2.2285C12.6529 1.48818 13.7108 1.48818 14.0885 2.2285L16.735 7.41481C16.8829 7.70466 17.1604 7.90633 17.4818 7.95743L23.2321 8.87169C24.0529 9.0022 24.3798 10.0082 23.7924 10.5963L19.6778 14.7159C19.4478 14.9461 19.3418 15.2724 19.3925 15.5938L20.2999 21.3452C20.4294 22.1662 19.5736 22.7879 18.8329 22.4111L13.6434 19.7708C13.3534 19.6232 13.0103 19.6232 12.7203 19.7708L7.53081 22.4111C6.79004 22.7879 5.93424 22.1662 6.06377 21.3452L6.97119 15.5938C7.0219 15.2724 6.91588 14.9461 6.68592 14.7159L2.57124 10.5963C1.98389 10.0082 2.31077 9.0022 3.1316 8.87169L8.88187 7.95743C9.20324 7.90633 9.48081 7.70466 9.62872 7.41481L12.2752 2.2285Z" fill="url(#paint0_linear_448_8887status)"></path><path d="M12.2754 2.22809C12.6531 1.48777 13.711 1.48777 14.0887 2.22809L16.7352 7.4144C16.8831 7.70426 17.1607 7.90592 17.482 7.95702L23.2323 8.87128C24.0531 9.00179 24.38 10.0078 23.7927 10.5959L19.678 14.7155C19.448 14.9457 19.342 15.272 19.3927 15.5934L20.3001 21.3448C20.4297 22.1658 19.5739 22.7875 18.8331 22.4107L13.6436 19.7704C13.3536 19.6228 13.0105 19.6228 12.7205 19.7704L7.53102 22.4107C6.79025 22.7875 5.93445 22.1658 6.06398 21.3448L6.9714 15.5934C7.02211 15.272 6.91609 14.9457 6.68613 14.7155L2.57145 10.5959C1.9841 10.0078 2.31098 9.00179 3.13181 8.87128L8.88208 7.95702C9.20345 7.90592 9.48102 7.70426 9.62893 7.4144L12.2754 2.22809Z" fill="url(#paint1_linear_448_8887status)"></path><path d="M12.2754 2.22809C12.6531 1.48777 13.711 1.48777 14.0887 2.22809L16.7352 7.4144C16.8831 7.70426 17.1607 7.90592 17.482 7.95702L23.2323 8.87128C24.0531 9.00179 24.38 10.0078 23.7927 10.5959L19.678 14.7155C19.448 14.9457 19.342 15.272 19.3927 15.5934L20.3001 21.3448C20.4297 22.1658 19.5739 22.7875 18.8331 22.4107L13.6436 19.7704C13.3536 19.6228 13.0105 19.6228 12.7205 19.7704L7.53102 22.4107C6.79025 22.7875 5.93445 22.1658 6.06398 21.3448L6.9714 15.5934C7.02211 15.272 6.91609 14.9457 6.68613 14.7155L2.57145 10.5959C1.9841 10.0078 2.31098 9.00179 3.13181 8.87128L8.88208 7.95702C9.20345 7.90592 9.48102 7.70426 9.62893 7.4144L12.2754 2.22809Z" fill="url(#paint2_radial_448_8887status)"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M16.433 7.56862L13.7865 2.38231C13.5347 1.88876 12.8294 1.88876 12.5776 2.38231L9.93115 7.56862C9.73395 7.95509 9.36385 8.22398 8.93536 8.29211L3.18509 9.20637C2.63787 9.29338 2.41995 9.96407 2.81151 10.3561L6.92619 14.4757C7.23281 14.7827 7.37417 15.2177 7.30655 15.6463L6.39914 21.3977C6.31278 21.945 6.88331 22.3595 7.37716 22.1082L12.5666 19.468C12.9533 19.2712 13.4108 19.2712 13.7975 19.468L18.9869 22.1082C19.4808 22.3595 20.0513 21.945 19.965 21.3977L19.0576 15.6463C18.9899 15.2177 19.1313 14.7827 19.4379 14.4757L23.5526 10.3561C23.9442 9.96407 23.7262 9.29338 23.179 9.20637L17.4287 8.29211C17.0003 8.22398 16.6302 7.95509 16.433 7.56862ZM14.0887 2.22809C13.711 1.48777 12.6531 1.48777 12.2754 2.22809L9.62893 7.4144C9.48102 7.70426 9.20345 7.90592 8.88208 7.95702L3.13181 8.87128C2.31098 9.00179 1.9841 10.0078 2.57145 10.5959L6.68613 14.7155C6.91609 14.9457 7.02211 15.272 6.9714 15.5934L6.06398 21.3448C5.93445 22.1658 6.79025 22.7875 7.53102 22.4107L12.7205 19.7704C13.0105 19.6228 13.3536 19.6228 13.6436 19.7704L18.8331 22.4107C19.5739 22.7875 20.4297 22.1658 20.3001 21.3448L19.3927 15.5934C19.342 15.272 19.448 14.9457 19.678 14.7155L23.7927 10.5959C24.38 10.0078 24.0531 9.00179 23.2323 8.87128L17.482 7.95702C17.1607 7.90592 16.8831 7.70426 16.7352 7.4144L14.0887 2.22809Z" fill="url(#paint3_linear_448_8887status)"></path><path d="M12.741 7.3195C12.937 6.98075 13.4261 6.98075 13.6221 7.3195L15.1721 9.99846C15.2442 10.123 15.3656 10.2113 15.5063 10.2413L18.5331 10.8876C18.9159 10.9693 19.067 11.4344 18.8054 11.7255L16.7365 14.0275C16.6403 14.1345 16.594 14.2773 16.6089 14.4204L16.9296 17.4988C16.9701 17.8881 16.5745 18.1755 16.2168 18.0167L13.3882 16.7604C13.2566 16.702 13.1065 16.702 12.975 16.7604L10.1464 18.0167C9.7887 18.1755 9.39305 17.8881 9.4336 17.4988L9.75428 14.4204C9.7692 14.2773 9.72281 14.1345 9.62661 14.0275L7.55775 11.7255C7.29613 11.4344 7.44726 10.9693 7.83001 10.8876L10.8568 10.2413C10.9976 10.2113 11.119 10.123 11.1911 9.99846L12.741 7.3195Z" fill="url(#paint4_linear_448_8887status)"></path><path d="M19.6431 11.3076C13.5027 17.1102 8.01855 14.5437 6.04404 12.5351C3.04056 8.07161 9.63153 11.6424 15.4716 10.0802C20.1437 8.83037 20.1993 10.3777 19.6431 11.3076Z" fill="url(#paint5_linear_448_8887status)"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M12.486 3.38311C12.6114 3.44656 12.6616 3.59966 12.5981 3.72506L11.8786 5.14712C11.8152 5.27252 11.6621 5.32275 11.5367 5.2593C11.4113 5.19585 11.3611 5.04275 11.4245 4.91735L12.144 3.49529C12.2075 3.36989 12.3606 3.31966 12.486 3.38311Z" fill="#F9BE76"></path><circle cx="3.68131" cy="9.52742" r="0.254474" fill="#F9BE76"></circle><circle cx="11.3155" cy="5.62557" r="0.254474" fill="#F9BE76"></circle><path d="M10.7514 8.25268C8.82111 10.9869 9.51093 12.4755 10.0971 12.8781C11.8774 13.6816 15.1214 8.94033 15.3409 7.68564C15.5604 6.43095 13.1642 4.83492 10.7514 8.25268Z" fill="url(#paint6_linear_448_8887status)" fill-opacity="0.6"></path><defs><linearGradient id="paint0_linear_448_8887status" x1="13.1818" y1="0.45166" x2="18.8651" y2="22.4213" gradientUnits="userSpaceOnUse"><stop stop-color="#FBA416" stop-opacity="0"></stop><stop offset="1" stop-color="#FDBB4E" stop-opacity="0.63"></stop></linearGradient><linearGradient id="paint1_linear_448_8887status" x1="13.182" y1="0.451259" x2="18.8653" y2="22.4209" gradientUnits="userSpaceOnUse"><stop stop-color="#FDBB4E" stop-opacity="0"></stop><stop offset="1" stop-color="#FDBB4E" stop-opacity="0.63"></stop></linearGradient><radialGradient id="paint2_radial_448_8887status" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(10.2132 9.86681) rotate(52.6712) scale(14.8278)"><stop offset="0.738765" stop-color="#9CB6DD" stop-opacity="0"></stop><stop offset="0.89825" stop-color="#C6F1FF" stop-opacity="0.37"></stop><stop offset="1" stop-color="#EFFBFF" stop-opacity="0.7"></stop></radialGradient><linearGradient id="paint3_linear_448_8887status" x1="20.3073" y1="17.4162" x2="8.6015" y2="6.81312" gradientUnits="userSpaceOnUse"><stop stop-color="#FEFFD3" stop-opacity="0.63"></stop><stop offset="0.218803" stop-color="#FAFD4E" stop-opacity="0"></stop><stop offset="0.491108" stop-color="#FDFF8B" stop-opacity="0.56"></stop><stop offset="0.733041" stop-color="#F7F990"></stop><stop offset="1" stop-color="white" stop-opacity="0"></stop><stop offset="1" stop-color="#FEFFB7" stop-opacity="0"></stop></linearGradient><linearGradient id="paint4_linear_448_8887status" x1="13.1816" y1="6.55811" x2="13.0119" y2="17.8398" gradientUnits="userSpaceOnUse"><stop stop-color="#FEFFB0"></stop><stop offset="0.277442" stop-color="white" stop-opacity="0.51"></stop><stop offset="1" stop-color="#FAFD4E" stop-opacity="0.15"></stop></linearGradient><linearGradient id="paint5_linear_448_8887status" x1="12.635" y1="10.8612" x2="12.551" y2="14.8707" gradientUnits="userSpaceOnUse"><stop stop-color="#FAFD4E" stop-opacity="0"></stop><stop offset="0.731853" stop-color="#FAFD4E" stop-opacity="0.46"></stop></linearGradient><linearGradient id="paint6_linear_448_8887status" x1="11.5105" y1="8.61842" x2="13.7636" y2="10.7449" gradientUnits="userSpaceOnUse"><stop offset="0.223958" stop-color="#FAFD4E" stop-opacity="0.35"></stop><stop offset="1" stop-color="#FAFD4E" stop-opacity="0"></stop></linearGradient></defs></svg>
               <div class="flex flex-col">
-                <span style="color: #13f36c;" class="text-[.75rem]">{gameStatus == 'playing' ? 'Next step' : 'Max.win'}</span>
-                <span class="text-[.875rem] text-[#f3f3f3] font-bold">{Math.round(data.coef[traps].at(gameStatus == 'playing' && steps<25-traps ? steps : -1) * bet * 100) / 100} <span class="text-[#858cab] font-normal">$</span></span>
+                <span style="color: #13f36c;" class="text-[.75rem]">{gameStatus == 'playing' || (gameStatus == 'waiting' && steps != 0) || gameStatus == 'lost' || gameStatus == 'win' ? 'Next step' : 'Max.win'}</span>
+                <span class="text-[.875rem] text-[#f3f3f3] font-bold">{Math.round(data.coef[traps].at((gameStatus == 'playing' || (gameStatus == 'waiting' && steps != 0) || gameStatus == 'lost' || gameStatus == 'win') && steps<25-traps ? steps : -1) * bet * 100) / 100} <span class="text-[#858cab] font-normal">$</span></span>
               </div>
             </div>
-            {#if gameStatus != 'playing' }
+            {#if gameStatus == 'idle' || (gameStatus == 'waiting' && steps == 0) }
             <div class="traps-selection bg-[rgb(10,15,30)] rounded-lg flex items-center justify-between h-[2.75rem] max-w-[225px] w-full py-3 px-4">
               <button aria-label="dr" disabled="{traps==1}" on:click={()=>{traps = traps - 2}} class="disabled:opacity-50 cursor-pointer"><svg pointer-events="none" enable-background="new 0 0 15 26" height="20" version="1.1" viewBox="0 0 15 26" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><polygon fill="#97a3cb" points="12.885,0.58 14.969,2.664 4.133,13.5 14.969,24.336 12.885,26.42 2.049,15.584 -0.035,13.5 "/></svg></button>
               <div class="flex flex-col items-center justify-center"><span class="text-[#f3f3f3] text-[16px] font-bold leading-[18px]">{traps}</span><span class="text-[#97a3cb] text-[12px] font-light leading-[12px]">traps</span></div>
@@ -181,35 +219,34 @@
             return async ({ result, update })=>{
               gameStatus = 'playing';
               if (result.data?.take) {
-                data.balance+=result.data?.take;
-                endGame('take')
+                endGame('take');
               };
               invalidateAll()
             }}}>
-            <div class="relative basis-2/3 flex bg-[#0a0d2c] rounded-[8px] text-[#f3f3f3] text-[18px] {steps == 25 - traps ? 'overflowWon' : ''}">
+            <div class="relative basis-2/3 flex bg-[#0a0d2c] rounded-[8px] text-[#f3f3f3] text-[18px] {gameStatus == 'win' ? 'overflowWon' : (gameStatus == 'lost' ? 'overflowLost' : '')}">
               <button type="button" disabled="{gameStatus == 'waiting' || gameStatus == 'playing'}" class="flex items-center justify-center h-[44px] w-[44px] px-5 opacity-70 font-bold cursor-pointer disabled:opacity-30 disabled:cursor-auto" on:click={()=>{bet*=0.5}}>-</button>
               <span class="w-[2px] h-[25px] bg-slate-800 my-auto"></span>
               <div class="w-full flex items-center justify-center flex-col">
                 <input type="hidden" name="traps" bind:value={traps}>
-                <div class="w-full flex items-center justify-center {gameStatus == 'playing' ? 'rotate-x-[35deg] translate-y-[-10px]' : ''}">
+                <div class="w-full flex items-center justify-center {gameStatus == 'playing' || (gameStatus == 'waiting' && steps != 0) ? 'rotate-x-[35deg] translate-y-[-10px]' : ''}">
                   <input class="ml-auto w-[90px] text-right font-bold outline-0" type="text" autocomplete="off" maxlength="8" name="bet" bind:value={bet} readonly="{gameStatus == 'waiting' || gameStatus == 'playing'}">
                   <span class="mr-auto w-[40px] text-[hsla(0,0%,100%,.251)] ml-2 mt-1">$</span>
                 </div>
-                {#if gameStatus == 'playing'}
+                {#if gameStatus == 'playing' || (gameStatus == 'waiting' && steps != 0)}
                 <span class="text-[rgba(133,140,171,.6)] text-[11px] -mt-4 -mr-8">Your bid:</span>
                 {/if}
               </div>
               <span class="w-[2px] h-[25px] bg-slate-800 my-auto"></span>
               <button type="button" disabled="{gameStatus == 'waiting' || gameStatus == 'playing'}" class="flex items-center justify-center h-[44px] w-[44px] px-5 opacity-70 font-bold cursor-pointer disabled:opacity-30 disabled:cursor-auto" on:click={()=>{bet*=2}}>+</button>
             </div>
-            {#if gameStatus == 'playing' && steps != 0}
+            {#if (gameStatus == 'playing' && steps != 0) || (gameStatus == 'waiting' && steps !=0) || (gameStatus == 'win')}
               <input type="hidden" name="take" value="{Math.round(data.coef[traps].at(steps-1) * bet * 100) / 100}">
-              <button disabled={(steps == 25 - traps) || isCellRequesting} type="submit" class="flex flex-col basis-1/3 rounded-[8px] text-[12px] p-[5px] text-center text-white cursor-pointer disabled:opacity-30 hover:opacity-80 disabled:cursor-not-allowed" style="background: linear-gradient(272.98deg,#fdbb4e 2.23%,#f56719 95.05%)">
+              <button disabled={(steps == 25 - traps) || isCellRequesting || gameStatus == 'waiting' || gameStatus == 'win'} type="submit" class="flex flex-col basis-1/3 rounded-[8px] text-[12px] p-[5px] text-center text-white cursor-pointer disabled:opacity-30 hover:opacity-80 disabled:cursor-not-allowed" style="background: linear-gradient(272.98deg,#fdbb4e 2.23%,#f56719 95.05%)">
                 <span class="font-bold">{Math.round(data.coef[traps].at(steps-1) * bet * 100) / 100} <span class="font-light">$</span></span>
                 <span class="tmuy -mt-0.5">Take</span>
               </button>
             {:else}
-              <button type="submit" class="block basis-1/3 rounded-[8px] text-[14px] p-[5px] text-center text-white cursor-pointer disabled:opacity-30 hover:opacity-80 disabled:cursor-not-allowed" disabled="{gameStatus == 'waiting' || (gameStatus == 'playing' && steps == 0)}" style="background: linear-gradient(93.73deg,#108de7,#0855c4);">{ gameStatus != 'playing' ? 'Play' : 'Waiting' }</button>
+              <button type="submit" class="block basis-1/3 rounded-[8px] text-[14px] p-[5px] text-center text-white cursor-pointer disabled:opacity-30 hover:opacity-80 disabled:cursor-not-allowed" disabled="{gameStatus == 'waiting' || (gameStatus == 'playing' && steps == 0) || gameStatus == 'lost' || gameStatus == 'win'}" style="background: linear-gradient(93.73deg,#108de7,#0855c4);">{ gameStatus == 'idle' || gameStatus == 'waiting' ? 'Play' : 'Waiting' }</button>
             {/if}
           </form>
         </div>
@@ -251,7 +288,7 @@
           </table>
         </div>
       </div>
-      <div class="mobile-footer hidden fixed z-10 h-[45px] w-full bottom-0 left-0 items-center px-[15px] bg-[#090f1e] text-white">
+      <div class="mobile-footer hidden fixed z-40 h-[45px] w-full bottom-0 left-0 items-center px-[15px] bg-[#090f1e] text-white">
         <a href="/" class="flex gap-1.5 items-center mr-auto">
           <svg width="13" height="13" fill="#ffffff" data-v-62d2d3c0="" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" aria-hidden="true" role="img" class="icon icon-chevron-left-bold sm margin square back-icon back-icon"><path d="M34.52 239.03L228.87 44.69c9.37-9.37 24.57-9.37 33.94 0l22.67 22.67c9.36 9.36 9.37 24.52.04 33.9L131.49 256l154.02 154.75c9.34 9.38 9.32 24.54-.04 33.9l-22.67 22.67c-9.37 9.37-24.57 9.37-33.94 0L34.52 272.97c-9.37-9.37-9.37-24.57 0-33.94z"></path></svg>
           <span class="text-[14px] mt-[-2px]">Back</span>
@@ -266,67 +303,113 @@
 
 <style lang="postcss">
   @reference "tailwindcss";
-  :global(html) { @apply bg-[#090f1e]; }
-  .header-top { @apply h-[52px] px-[15px] bg-[#090f1e] flex relative overflow-hidden; }
-  .header-bottom { @apply h-[47px] px-[10px] mx-[15px] flex relative overflow-hidden rounded-[10px]; }
-  .header-bottom { background-image: linear-gradient(92deg,#1e283f,rgba(20,27,46,.6)); }
-  .xbl-side { @apply flex px-[15px] py-[15px];}
-  .section { @apply rounded-[12px] flex flex-col overflow-hidden relative w-[320px] h-full max-h-[calc(100vh-130px)]; }
-  .section::after {
-    content: "";
-    background: linear-gradient(to bottom, transparent, #141b2f);
-    @apply absolute bottom-0 left-0 w-full h-12;
-  }
-  img {
-    pointer-events: none;
-    -webkit-user-drag: none;
-    user-select: none;
-  }
-  .game-container { @apply flex w-full; }
-  .rewards { @apply h-full max-h-[calc(100vh-130px)] max-w-[400px] w-full px-[15px] bg-[#151b2e] rounded-[16px]; }
-  .reward-header { @apply flex items-center justify-between py-[15px] border-b border-slate-700; }
-  .rbutton button { @apply rounded-[8px] border-2 border-solid border-transparent text-white text-[13px] font-bold leading-[18px] py-[9px] px-[15px]; }
-  .rtable thead td { @apply text-white text-[11px] text-start py-[14px]; }
-  .rtable td:nth-child(4) { text-align: center }
-  .rtable td:last-child { text-align: end; padding-right: 8px; }
-  .rtable td:first-child { padding-left: 8px; width: 45px; }
-  .rtable tbody td { @apply text-[12px] py-[8px]; }
-  .rtable tbody tr:nth-child(odd) td { @apply bg-[#1b233c]; }
-  .rtable tbody tr:nth-child(odd) td:first-child { @apply rounded-l-[8px]; }
-  .rtable tbody tr:nth-child(odd) td:last-child { @apply rounded-r-[8px]; }
-  .game { @apply w-full; }
-  .cells::after {
-    background-image: var(--cellAfter);
-    background-size: 82px 128px;
-    content: "";
-    height: 128px;
-    position: absolute;
-    right: -140px;
-    top: 25px;
-    width: 82px;
-  }
-  .cells::before {
-    background-image: var(--cellBefore);
-    background-size: 68px 201px;
-    content: "";
-    height: 201px;
-    left: -125px;
-    position: absolute;
-    top: 140px;
-    width: 68px;
-  }
-  .multiply-list::before {
-    background: linear-gradient(270deg,#151b2e 11.77%,rgba(10,15,29,0) 50%);
-    content: "";
-    height: calc(100% + 4px);
-    position: absolute;
-    right: 0;
-    width: 1.25rem;
-    z-index: 3;
+  @supports (display: block) {
+    :global(html) { @apply bg-[#090f1e]; }
+    .header-top { @apply h-[52px] px-[15px] bg-[#090f1e] flex relative overflow-hidden; }
+    .header-bottom { @apply h-[47px] px-[10px] mx-[15px] flex relative overflow-hidden rounded-[10px]; }
+    .header-bottom { background-image: linear-gradient(92deg,#1e283f,rgba(20,27,46,.6)); }
+    .xbl-side { @apply flex px-[15px] py-[15px];}
+    .section { @apply rounded-[12px] flex flex-col overflow-hidden relative w-[320px] h-full max-h-[calc(100vh-130px)]; }
+    .section::after {
+      content: "";
+      background: linear-gradient(to bottom, transparent, #141b2f);
+      @apply absolute bottom-0 left-0 w-full h-12;
+    }
+    img {
+      pointer-events: none;
+      -webkit-user-drag: none;
+      user-select: none;
+    }
+    .game-container { @apply flex w-full; }
+    .rewards { @apply h-full max-h-[calc(100vh-130px)] max-w-[400px] w-full px-[15px] bg-[#151b2e] rounded-[16px]; }
+    .reward-header { @apply flex items-center justify-between py-[15px] border-b border-slate-700; }
+    .rbutton button { @apply rounded-[8px] border-2 border-solid border-transparent text-white text-[13px] font-bold leading-[18px] py-[9px] px-[15px]; }
+    .rtable thead td { @apply text-white text-[11px] text-start py-[14px]; }
+    .rtable td:nth-child(4) { text-align: center }
+    .rtable td:last-child { text-align: end; padding-right: 8px; }
+    .rtable td:first-child { padding-left: 8px; width: 45px; }
+    .rtable tbody td { @apply text-[12px] py-[8px]; }
+    .rtable tbody tr:nth-child(odd) td { @apply bg-[#1b233c]; }
+    .rtable tbody tr:nth-child(odd) td:first-child { @apply rounded-l-[8px]; }
+    .rtable tbody tr:nth-child(odd) td:last-child { @apply rounded-r-[8px]; }
+    .game { @apply w-full; }
+    .cells::after {
+      background-image: var(--cellAfter);
+      background-size: 82px 128px;
+      content: "";
+      height: 128px;
+      position: absolute;
+      right: -140px;
+      top: 25px;
+      width: 82px;
+    }
+    .cells::before {
+      background-image: var(--cellBefore);
+      background-size: 68px 201px;
+      content: "";
+      height: 201px;
+      left: -125px;
+      position: absolute;
+      top: 140px;
+      width: 68px;
+    }
+    .multiply-list::before {
+      background: linear-gradient(270deg,#151b2e 11.77%,rgba(10,15,29,0) 50%);
+      content: "";
+      height: calc(100% + 4px);
+      position: absolute;
+      right: 0;
+      width: 1.25rem;
+      z-index: 3;
+    }
   }
   .overflowWon::after {
     content: "You Won";
     @apply absolute w-full h-full top-0 left-0 text-[#13f36c] bg-inherit text-center pt-2 rounded-[inherit] rotate-x-[30deg];
+  }
+  .overflowLost::after {
+    content: "Try again";
+    @apply absolute w-full h-full top-0 left-0 text-[#666c8c] bg-inherit text-center pt-2 rounded-[inherit] rotate-x-[45deg];
+  }
+  @keyframes cellOut {
+    from {
+      opacity: 1;
+      transform: scale(1);
+    } to {
+      opacity: 0.3;
+      transform: scale(0.3);
+    }
+  }
+  .cellOut {
+    animation-name: cellOut;
+    animation-duration: 750ms;
+    animation-delay: 750ms;
+  }
+  .iconp::after {
+    background: linear-gradient(180deg,#108de7,#0855c4);
+    border-radius: 0 7px 7px 0;
+    box-shadow: 0 2px 66px rgba(10,98,204,.5);
+    content: "";
+    height: 30px;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    -webkit-transform: rotate(180deg) translateY(50%);
+    transform: rotate(180deg) translateY(50%);
+    width: 8px;
+  }
+  @keyframes animateAlert {
+    0% {transform: translateY(-80px)}
+    5% {transform: translateY(20px)}
+    7% {transform: translateY(-10px)}
+    9% {transform: translateY(10px)}
+    11%,91% {transform: translateY(0px)}
+    93% {transform: translateY(-10px)}
+    95% {transform: translateY(20px)}
+    100% {transform: translateY(-80px)}
+  }
+  .animateAlert {
+    animation: 5s linear animateAlert forwards;
   }
   @media only screen and (max-width: 1355px) {
     .header-top, .header-bottom, .section {display: none}
@@ -342,5 +425,6 @@
     .rewards { margin-bottom: 40px; }
     .tmuy { margin-top: 0px }
     .multiply-list { width: 10rem; }
+    .finalWin { position: fixed; margin-left: 0px; }
   }
 </style>

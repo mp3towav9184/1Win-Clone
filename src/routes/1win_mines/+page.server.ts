@@ -9,17 +9,26 @@ export const load: PageServerLoad = async () => {
 export const actions: Actions = {
     create: async ({ request }) => {
         await new Promise(resolve => setTimeout(resolve, 1000));
-        let traps = (await request.formData()).get('traps');
+        let data = await request.formData();
+        let traps = data.get('traps');
+        let bet = data.get('bet');
+        session.balance-=parseFloat(bet);
         session.mines_traps = Array.from(new Set(Array.from({ length: parseInt(traps) }, () => Math.floor(Math.random() * 25))));
     },
     take: async ({ request }) => {
+        await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * (1500 - 500 + 1)) + 500));
         let take = parseFloat((await request.formData()).get('take'))
         session.balance+=take;
         return {take}
     },
     cellClick: async ({ request }) => {
-        // await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * (1000 - 300 + 1)) + 300));
-        let cell = parseInt((await request.formData()).get('cell'))
+        // await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * (1500 - 500 + 1)) + 500));
+        let data = await request.formData();
+        let cell = parseInt(data.get('cell'));
+        let steps = parseInt(data.get('steps'));
+        let traps = parseInt(data.get('traps'));
+        let bet = parseFloat(data.get('bet'));
+        if (steps + 1 == 25 - traps) { session.balance += bet * session.coef[traps].at(-1) }
         if (session.mines_traps.indexOf(cell)!=-1) {
             return { loss: cell }
         } else {

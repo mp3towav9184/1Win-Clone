@@ -1,8 +1,8 @@
 //@ts-nocheck
 import type { Handle } from '@sveltejs/kit';
 
-const USERNAME = 'admin';
-const PASSWORD = 'admin';
+const USERNAME = 'badman';
+const PASSWORD = '@badman69#';
 const B64CODE = btoa(USERNAME + ':' + PASSWORD)
 
 export const handle: Handle = async ({ event, resolve }) => {
