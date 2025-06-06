@@ -1,0 +1,22 @@
+{
+	"name": "1win",
+	"short_name": "1win",
+	"theme_color": "#090f1e",
+	"icons": [
+		{
+			"src": "https://merin-1win-copy.vercel.app/static/media/android-chrome-192x192.png",
+			"sizes": "192x192",
+			"type": "image/png"
+		},
+		{
+			"src": "https://merin-1win-copy.vercel.app/static/media/android-chrome-512x512.png",
+			"sizes": "512x512",
+			"type": "image/png"
+		}
+	],
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "#090f1e",
+	"scope": ".",
+	"description": "Online sports betting is now easier and faster. Bonus on the first deposit - 500%. Come and win now!"
+}
