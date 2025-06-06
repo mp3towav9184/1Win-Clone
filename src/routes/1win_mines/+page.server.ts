@@ -9,7 +9,7 @@ export const load: PageServerLoad = async () => {
 
 export const actions: Actions = {
     create: async ({ request }) => {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // await new Promise(resolve => setTimeout(resolve, 1000));
         let data = await request.formData();
         let traps = data.get('traps');
         let bet = data.get('bet');
@@ -17,13 +17,13 @@ export const actions: Actions = {
         session.mines_traps = random.sample(Array.from({ length: 25 }, (_, i) => i), parseInt(traps));
     },
     take: async ({ request }) => {
-        await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * (1500 - 500 + 1)) + 500));
+        // await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * (1500 - 500 + 1)) + 500));
         let take = parseFloat((await request.formData()).get('take'))
         session.balance+=take;
         return {take}
     },
     cellClick: async ({ request }) => {
-        await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * (1500 - 500 + 1)) + 500));
+        // await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * (1500 - 500 + 1)) + 500));
         let data = await request.formData();
         let cell = parseInt(data.get('cell'));
         let steps = parseInt(data.get('steps'));
