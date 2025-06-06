@@ -41,7 +41,7 @@
   $: func_coef_x = 0;
   $: func_alert_show = false;
   $: multiplyActiveElem = 0;
-  $: isFinalWinShown = false;
+  $: isFinalWinShown = true;
   $: allowAudio = false;
   $: isBlendShowable = false;
   $: blendX = 40;
@@ -123,6 +123,7 @@
       } else {
         bgElem.style.position = 'relative';
       }
+      document.querySelector('.fwam').style.marginTop = `-${document.querySelector('.fwimg').scrollHeight * 100 / 411}px`;
     }
     window.addEventListener('resize', onResize)
     onResize();
@@ -166,8 +167,8 @@
       </button>
       <div class="finalWin absolute ml-[8px] z-30 top-0 left-0 w-[calc(100%-8px)] h-full backdrop-blur-[2px] backdrop-brightness-50 rounded-2xl flex items-center justify-center transition ease-in-out duration-300 {isFinalWinShown ? '' : 'opacity-0 invisible'}">
         <div class="flex flex-col items-center justify-center my-auto">
-          <img class="max-w-[480px] w-[calc(100%-24px)]  px-[12px]" src="{minesYouWon}" alt="win">
-          <div class="text-white font-bold text-4xl rotate-x-[50deg] mt-[-100px] py-2" style="letter-spacing: -.3px;">{bet * data.coef[traps].at(-1)} $</div>
+          <img class="max-w-[480px] fwimg w-[calc(100%-24px)]  px-[12px]" src="{minesYouWon}" alt="win">
+          <div class="text-white font-bold text-4xl rotate-x-[50deg] fwam mt-[-100px] py-2" style="letter-spacing: -.3px;">{bet * data.coef[traps].at(-1)} $</div>
           <button class="rounded-[8px] text-2xl px-8 py-2 text-center text-white cursor-pointer uppercase mt-5 hover:brightness-75 transition ease-in-out duration-300" style="background: linear-gradient(272.98deg,#fdbb4e 2.23%,#f56719 95.05%)" on:click={()=>{isFinalWinShown = false}}>Take</button>
         </div>
       </div>
