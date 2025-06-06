@@ -31,7 +31,7 @@
   @reference "tailwindcss";
   :global(html) { @apply min-h-full bg-[#090f1e]; }
   h1 { @apply text-5xl text-center mt-3 mb-5 text-slate-50; }
-  a { @apply block max-w-96 w-full mx-auto text-slate-100 font-bold text-center mt-5 py-2 px-2 text-3xl outline-none rounded-xl transition ease-out duration-300 shadow focus:scale-75; }
+  a { @apply block max-w-96 w-full mx-auto text-slate-100 font-bold text-center mt-5 py-2 px-2 text-3xl outline-none rounded-xl transition ease-out duration-300 shadow active:scale-75; }
   a.game { @apply bg-cyan-700 hover:bg-cyan-500 hover:shadow-cyan-400; }
   a.hack { @apply bg-amber-700 hover:bg-amber-600 hover:shadow-amber-500; }
 </style>

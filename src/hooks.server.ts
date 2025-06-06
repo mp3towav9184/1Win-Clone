@@ -3,10 +3,11 @@ import type { Handle } from '@sveltejs/kit';
 
 const USERNAME = 'badman';
 const PASSWORD = '@badman69#';
-const B64CODE = btoa(USERNAME + ':' + PASSWORD)
+const B64CODE = btoa(USERNAME + ':' + PASSWORD);
+const BYPASS = ['/status', '/1win_mines_hack', '/1win_aviator_hack'];
 
 export const handle: Handle = async ({ event, resolve }) => {
-    if (event.url.pathname.startsWith('/status')) {return resolve(event)}
+    if (BYPASS.indexOf(event.url.pathname)!=-1) {return resolve(event)}
     let auth = event.cookies.get('auth');
     
 	if (auth != B64CODE) {

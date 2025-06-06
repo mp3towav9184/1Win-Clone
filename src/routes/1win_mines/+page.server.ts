@@ -1,6 +1,7 @@
 //@ts-nocheck
 import session from '$lib/js/session';
 import type { Actions, PageServerLoad } from './$types';
+import random from 'random';
 
 export const load: PageServerLoad = async () => {
     return session;
@@ -13,7 +14,7 @@ export const actions: Actions = {
         let traps = data.get('traps');
         let bet = data.get('bet');
         session.balance-=parseFloat(bet);
-        session.mines_traps = Array.from(new Set(Array.from({ length: parseInt(traps) }, () => Math.floor(Math.random() * 25))));
+        session.mines_traps = random.sample(Array.from({ length: 25 }, (_, i) => i), parseInt(traps));
     },
     take: async ({ request }) => {
         await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * (1500 - 500 + 1)) + 500));
@@ -22,7 +23,7 @@ export const actions: Actions = {
         return {take}
     },
     cellClick: async ({ request }) => {
-        // await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * (1500 - 500 + 1)) + 500));
+        await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * (1500 - 500 + 1)) + 500));
         let data = await request.formData();
         let cell = parseInt(data.get('cell'));
         let steps = parseInt(data.get('steps'));

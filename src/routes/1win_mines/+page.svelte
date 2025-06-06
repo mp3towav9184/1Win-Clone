@@ -15,6 +15,11 @@
   import cellAfter from "$lib/assets/cell-after.svg";
   import cellBefore from "$lib/assets/cell-before.svg";
   import minesYouWon from "$lib/assets/mines-won.png";
+  import blendImage from "$lib/assets/blend-image.svg";
+  import btnClkSnd from "$lib/audio/button_click.mp3";
+  import gmRdSnd from "$lib/audio/game_ready.mp3";
+  import gmWnSnd from "$lib/audio/game_win.mp3";
+  import starSnd from "$lib/audio/star_select.mp3";
 	import { onMount } from "svelte";
 	import { enhance } from "$app/forms";
 	import { invalidateAll } from "$app/navigation";
@@ -37,6 +42,9 @@
   $: func_alert_show = false;
   $: multiplyActiveElem = 0;
   $: isFinalWinShown = false;
+  $: allowAudio = false;
+  $: isBlendShowable = false;
+  $: blendX = 40;
   $: if (steps == 25 - traps) { invalidateAll();endGame('win') }
   function generateRandomArray() {
     let name = Math.random().toString(36).substring(2, 8);
@@ -53,6 +61,30 @@
     rewards = [generateRandomArray(), ...rewards.slice(0, 20)];
     setTimeout(LoopAddReward, Math.floor(Math.random() * (1000 - 100 + 1)) + 100);
   }
+  function playSound(id) {
+    if (allowAudio) {
+      let el = document.getElementById(id)
+      el.currentTime = 0;
+      el.play();
+    }
+  }
+  function initBlend() {
+    let totalMS = 300; // ms
+    let diff = 10; // px
+    let min = 40; // px
+    let max = 600; // px
+    let delay = totalMS / (max - min) * diff;
+    let fn = ()=>{
+      blendX += diff;
+      if (blendX >= max) {
+        blendX = min;
+        isBlendShowable = false;
+        return
+      }
+      setTimeout(fn, delay);
+    }
+    setTimeout(fn, delay);
+  }
   function showWinAlert(win:number, coef:number) {
     func_win_amount = win;
     func_coef_x = coef;
@@ -65,6 +97,7 @@
     gameStatus = why == 'lost' ? 'lost' : 'win';
     if (why == 'take') {showWinAlert(Math.round(data.coef[traps].at(steps-1) * bet * 100) / 100, data.coef[traps].at(steps-1))}
     if (why == 'win') {isFinalWinShown = true}
+    if (gameStatus == 'win') {playSound('gmWnSnd')}
     setTimeout(()=>{
       win = list25.filter(i=>data.mines_traps.indexOf(i)==-1);
       loss = data.mines_traps;
@@ -102,6 +135,10 @@
 <svelte:head>
   <title>1win</title>
 </svelte:head>
+<audio id="btnClkSnd" src="{btnClkSnd}" width="0" height="0" hidden></audio>
+<audio id="gmRdSnd" src="{gmRdSnd}" width="0" height="0" hidden></audio>
+<audio id="gmWnSnd" src="{gmWnSnd}" width="0" height="0" hidden></audio>
+<audio id="starSnd" src="{starSnd}" width="0" height="0" hidden></audio>
 <div id="main-container">
   <div class="header-top">
     <img class="block h-full py-[10px]" src="{headerTopLeft}" alt="headertopleft">
@@ -130,7 +167,7 @@
       <div class="finalWin absolute ml-[8px] z-30 top-0 left-0 w-[calc(100%-8px)] h-full backdrop-blur-[2px] backdrop-brightness-50 rounded-2xl flex items-center justify-center transition ease-in-out duration-300 {isFinalWinShown ? '' : 'opacity-0 invisible'}">
         <div class="flex flex-col items-center justify-center my-auto">
           <img class="max-w-[480px] w-[calc(100%-24px)]  px-[12px]" src="{minesYouWon}" alt="win">
-          <div class="text-white font-bold text-4xl rotate-x-[50deg] mt-[-100px]" style="letter-spacing: -.3px;">{bet * data.coef[traps].at(-1)} $</div>
+          <div class="text-white font-bold text-4xl rotate-x-[50deg] mt-[-100px] py-2" style="letter-spacing: -.3px;">{bet * data.coef[traps].at(-1)} $</div>
           <button class="rounded-[8px] text-2xl px-8 py-2 text-center text-white cursor-pointer uppercase mt-5 hover:brightness-75 transition ease-in-out duration-300" style="background: linear-gradient(272.98deg,#fdbb4e 2.23%,#f56719 95.05%)" on:click={()=>{isFinalWinShown = false}}>Take</button>
         </div>
       </div>
@@ -150,7 +187,13 @@
           </div>
         </div>
         <div class="gheader absolute top-[15px] right-[15px] flex gap-2">
-          <button class="bg-[#151b2e] rounded-[8px] text-[#fafafa] text-[13px] p-[5px] flex gap-1 cursor-pointer" aria-label="ho"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M13.3927 8.64256L3.02352 18.0865C2.62758 18.4471 2.62758 19.0318 3.02352 19.3924C3.41947 19.753 4.06143 19.753 4.45738 19.3924L20.9751 4.34855C21.371 3.98793 21.371 3.40325 20.9751 3.04263C20.5791 2.68201 19.9371 2.68201 19.5412 3.04263L16.78 5.55749C16.4004 5.28723 16.0565 4.99502 15.7745 4.64766L15.6789 4.53067C15.364 4.14547 15.0083 3.70889 14.9518 3.34223C14.8954 2.97129 14.5256 2.70735 14.1213 2.72875C13.7108 2.75443 13.3927 3.06403 13.3927 3.43925V8.64256ZM10.6725 15.5788L7.15594 18.7816C7.40094 20.1849 9.05099 21.273 11.0421 21.273C13.2015 21.273 14.9597 19.9932 14.9597 18.4196V11.6741L13.3927 13.1013V16.1511C12.5806 15.703 11.616 15.5142 10.6725 15.5788ZM18.592 13.9925C18.2142 12.255 17.1256 11.2263 16.1054 10.6307L19.5967 7.45079C20.0186 7.8194 20.3932 8.24732 20.6777 8.77796C21.0883 9.54267 21.2779 10.3559 21.2262 11.1306C21.1447 12.3376 20.7248 13.5574 20.0917 14.5219C20.0761 14.5461 20.0588 14.5675 20.04 14.5875C19.8613 14.8528 19.6749 15.1068 19.4649 15.3237C19.1781 15.619 18.6829 15.6504 18.3601 15.3879C18.0342 15.1282 18.0028 14.6774 18.2896 14.382C18.3722 14.2961 18.4459 14.194 18.5194 14.0922C18.5435 14.0588 18.5676 14.0253 18.592 13.9925Z" fill="#97A3CB"></path></svg></button>
+          <button class="bg-[#151b2e] rounded-[8px] text-[#fafafa] text-[13px] p-[5px] flex gap-1 cursor-pointer" aria-label="ho" on:click={()=>{allowAudio = !allowAudio}}>
+            {#if allowAudio}
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.6154 4.49563C12.6117 4.47815 12.6087 4.46083 12.6063 4.44369C12.5618 4.11996 12.2701 3.88961 11.9513 3.90829C11.6275 3.9307 11.3767 4.20089 11.3767 4.52836V15.6224C10.8589 15.3061 10.2212 15.1119 9.52302 15.1119C7.82013 15.1119 6.43359 16.2287 6.43359 17.6021C6.43359 18.9755 7.82013 20.0924 9.52302 20.0924C11.2259 20.0924 12.6124 18.9755 12.6124 17.6021V10.3456C12.6134 10.3459 12.6144 10.3463 12.6154 10.3467V4.49563Z" fill="#97A3CB"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M12.6152 10.348V4.4873C12.6767 4.79839 12.9439 5.1612 13.1816 5.48296L13.257 5.58506C13.6767 6.15722 14.2703 6.55791 14.8986 6.98201L14.9006 6.98333L14.9009 6.98358C15.7436 7.55252 16.6159 8.14144 17.1237 9.18968C17.4475 9.85706 17.597 10.5668 17.5563 11.2429C17.492 12.2963 17.1608 13.3608 16.6616 14.2025C16.6492 14.2237 16.6356 14.2424 16.6208 14.2598C16.4799 14.4914 16.3328 14.713 16.1672 14.9023C15.9411 15.16 15.5506 15.1874 15.296 14.9583C15.039 14.7317 15.0143 14.3383 15.2404 14.0805C15.3055 14.0055 15.3636 13.9164 15.4216 13.8276C15.4407 13.7984 15.4597 13.7692 15.4789 13.7406C15.0614 11.6158 13.5434 10.7055 12.6152 10.348Z" fill="#97A3CB"></path></svg>
+            {:else}
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M13.3927 8.64256L3.02352 18.0865C2.62758 18.4471 2.62758 19.0318 3.02352 19.3924C3.41947 19.753 4.06143 19.753 4.45738 19.3924L20.9751 4.34855C21.371 3.98793 21.371 3.40325 20.9751 3.04263C20.5791 2.68201 19.9371 2.68201 19.5412 3.04263L16.78 5.55749C16.4004 5.28723 16.0565 4.99502 15.7745 4.64766L15.6789 4.53067C15.364 4.14547 15.0083 3.70889 14.9518 3.34223C14.8954 2.97129 14.5256 2.70735 14.1213 2.72875C13.7108 2.75443 13.3927 3.06403 13.3927 3.43925V8.64256ZM10.6725 15.5788L7.15594 18.7816C7.40094 20.1849 9.05099 21.273 11.0421 21.273C13.2015 21.273 14.9597 19.9932 14.9597 18.4196V11.6741L13.3927 13.1013V16.1511C12.5806 15.703 11.616 15.5142 10.6725 15.5788ZM18.592 13.9925C18.2142 12.255 17.1256 11.2263 16.1054 10.6307L19.5967 7.45079C20.0186 7.8194 20.3932 8.24732 20.6777 8.77796C21.0883 9.54267 21.2779 10.3559 21.2262 11.1306C21.1447 12.3376 20.7248 13.5574 20.0917 14.5219C20.0761 14.5461 20.0588 14.5675 20.04 14.5875C19.8613 14.8528 19.6749 15.1068 19.4649 15.3237C19.1781 15.619 18.6829 15.6504 18.3601 15.3879C18.0342 15.1282 18.0028 14.6774 18.2896 14.382C18.3722 14.2961 18.4459 14.194 18.5194 14.0922C18.5435 14.0588 18.5676 14.0253 18.592 13.9925Z" fill="#97A3CB"></path></svg>
+            {/if}
+          </button>
           <button class="bg-[#151b2e] rounded-[8px] text-[#fafafa] text-[13px] p-[5px] px-[11px] flex gap-2 cursor-not-allowed" aria-label="on">
             <svg class="mt-[3px]" width="16" height="16" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20"><g fill="#97A3CB" fill-rule="evenodd" clip-path="url(#wallet_svg__a)" clip-rule="evenodd"><path d="M1.492 2.056C.12 3.487.082 4.937.01 9.087a52 52 0 0 0 0 1.826c.073 4.15.11 5.6 1.483 7.03 1.373 1.432 3.454 1.432 7.615 1.432h.932c3.83 0 5.745 0 7.04-1.114q.385-.331.696-.74c.742-.973.959-1.651 1.022-3.771H16.03c-1.949 0-3.529-1.679-3.529-3.75s1.58-3.75 3.53-3.75h2.752c-.091-2.34-.386-3.15-1.337-4.16C16.067.624 13.848.624 9.412.624h-.305c-4.161 0-6.242 0-7.615 1.431M3.875 3.75a.75.75 0 0 0 0 1.5h4.75a.75.75 0 0 0 0-1.5z"></path><path d="M13.75 10c0-1.38 1.053-2.5 2.353-2.5h2.573c.731 0 1.324.63 1.324 1.406v2.188c0 .776-.593 1.406-1.323 1.406h-2.574c-1.3 0-2.353-1.12-2.353-2.5M15 10a1.25 1.25 0 1 1 2.5 0 1.25 1.25 0 0 1-2.5 0"></path></g><defs><clipPath id="wallet_svg__a"><path fill="#fff" d="M0 0h20v20H0z"></path></clipPath></defs></svg>
             <span class="mt-[1px]">{readableBalance.replaceAll(',', '')} $</span>
@@ -161,13 +204,13 @@
           </button>
         </div> 
         <div class="gameblocks">
-          <form class="flex justify-center align-middle w-full mt-20 mb-10" action="?/cellClick" method="post" use:enhance={()=>{ isCellRequesting = true; return async ({result, update})=>{ isCellRequesting = false; steps++; await update(); if (result.data?.loss) {endGame('lost')} }}}>
+          <form class="flex justify-center align-middle w-full mt-20 mb-10" action="?/cellClick" method="post" use:enhance={()=>{ isCellRequesting = true; return async ({result, update})=>{ isCellRequesting = false; steps++; await update(); if (result.data?.win) {playSound('starSnd')}; if (result.data?.loss) {endGame('lost')} }}}>
             <input type="hidden" name="steps" value="{steps}">
             <input type="hidden" name="traps" value="{traps}">
             <input type="hidden" name="bet" value="{bet}">
             <div class="cells relative" style='background-color: #0a0f1d;background-image: url("{minesCellsBg}");background-position: 50%;background-repeat: no-repeat;background-size: auto;border-radius: 25px;box-shadow: 0 -2px 20px rgba(42,49,69,.4),0 4px 54px rgba(42,49,69,.2);display: grid;grid-template-columns: repeat(5,66px);grid-template-rows: repeat(5,66px);padding: 10px;--cellAfter: url("{cellAfter}");--cellBefore: url("{cellBefore}")'>
               {#each list25 as i}
-                <button type="submit" name="cell" value="{i}" class="cell flex justify-center items-center" disabled="{isCellRequesting || gameStatus != 'playing' || win.indexOf(i)!=-1 || loss.indexOf(i)!=-1}">
+                <button type="submit" name="cell" value="{i}" class="cell flex justify-center items-center z-[1]" on:click={()=>{playSound('btnClkSnd')}} disabled="{isCellRequesting || gameStatus != 'playing' || win.indexOf(i)!=-1 || loss.indexOf(i)!=-1}">
                   {#if win.indexOf(i)!=-1}
                     <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" fill="none" style="background: 0px 0px;/*! display: none; */"><defs><linearGradient id="Gradient-0_s_i" x1="28.392" y1="0.972" x2="40.632" y2="48.291" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fba416" stop-opacity="0"></stop><stop offset="1" stop-color="#fdbb4e" stop-opacity="0.63"></stop></linearGradient><linearGradient id="Gradient-1_s_i" x1="28.392" y1="0.972" x2="40.633" y2="48.291" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fdbb4e" stop-opacity="0"></stop><stop offset="1" stop-color="#fdbb4e" stop-opacity="0.63"></stop></linearGradient><linearGradient id="Gradient-3_s_i" x1="43.739" y1="37.512" x2="18.526" y2="14.674" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#feffd3" stop-opacity="0.63"></stop><stop offset="0.219" stop-color="#fafd4e" stop-opacity="0"></stop><stop offset="0.491" stop-color="#fdff8b" stop-opacity="0.56"></stop><stop offset="0.733" stop-color="#f7f990"></stop><stop offset="1" stop-color="#fff" stop-opacity="0"></stop><stop offset="1" stop-color="#feffb7" stop-opacity="0"></stop></linearGradient><linearGradient id="Gradient-4_s_i" x1="28.391" y1="14.126" x2="28.026" y2="38.425" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#feffb0"></stop><stop offset="0.277" stop-color="#fff" stop-opacity="0.51"></stop><stop offset="1" stop-color="#fafd4e" stop-opacity="0.15"></stop></linearGradient><linearGradient id="Gradient-5_s_i" x1="27.214" y1="23.393" x2="27.033" y2="32.029" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fafd4e" stop-opacity="0"></stop><stop offset="0.732" stop-color="#fafd4e" stop-opacity="0.46"></stop></linearGradient><linearGradient id="Gradient-6_s_i" x1="24.792" y1="18.563" x2="29.645" y2="23.143" gradientUnits="userSpaceOnUse"><stop offset="0.224" stop-color="#fafd4e" stop-opacity="0.35"></stop><stop offset="1" stop-color="#fafd4e" stop-opacity="0"></stop></linearGradient><linearGradient id="Gradient-7_s_i" x1="0.016" y1="26.376" x2="16.573" y2="26.055" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fff"></stop><stop offset="1" stop-color="#fff" stop-opacity="0"></stop></linearGradient><radialGradient id="Gradient-2_s_i" cx="0" cy="0" r="1" fx="0" fy="0" gradientUnits="userSpaceOnUse" gradientTransform="rotate(52.671 -10.467 32.845) scale(31.9369)"><stop offset="0.739" stop-color="#9cb6dd" stop-opacity="0"></stop><stop offset="0.898" stop-color="#c6f1ff" stop-opacity="0.37"></stop><stop offset="1" stop-color="#effbff" stop-opacity="0.7"></stop></radialGradient><mask id="Mask-1_s_i"><path fill="url(#Gradient-7_s_i)" transform="rotate(30 31.002 3.397)" style="animation: 0.7s linear both a4_t_s_i;" d="M0 0h16.959v56H0z"></path></mask></defs><style>@keyframes star_t_s_i{0%{transform:translate(28.3918px,26.0576px) scale(0,0) translate(-23.4974px,-22.4547px);animation-timing-function:cubic-bezier(0,0,.58,1)}42.8571%{transform:translate(28.3918px,26.0576px) scale(1,1) translate(-23.4974px,-22.4547px);animation-timing-function:cubic-bezier(0,0,.58,1)}71.4285%{transform:translate(28.3918px,26.0576px) scale(1.15,1.15) translate(-23.4974px,-22.4547px);animation-timing-function:cubic-bezier(0,0,.58,1)}to{transform:translate(28.3918px,26.0576px) scale(1,1) translate(-23.4974px,-22.4547px)}}@keyframes a1_t_s_i{0%,to{transform:translate(23.4966px,22.4549px)}}@keyframes a0_t_s_i{0%{transform:scale(1.889498,1.889498) translate(-28.3911px,-27.0603px);animation-timing-function:cubic-bezier(0,0,.58,1)}to{transform:scale(1,1) translate(-28.3911px,-27.0603px)}}@keyframes a2_t_s_i{0%{transform:translate(22.2182px,22.7642px) rotate(145.526246deg) scale(.462454,.462454) translate(-27.1127px,-26.3671px);animation-timing-function:cubic-bezier(0,0,.58,1)}to{transform:translate(22.2182px,22.7642px) rotate(0deg) scale(1,1) translate(-27.1127px,-26.3671px)}}@keyframes a2_o_s_i{0%{opacity:0;animation-timing-function:cubic-bezier(0,0,.58,1)}to{opacity:1}}@keyframes a3_t_s_i{0%{transform:translate(18.9293px,24.3971px) rotate(-53.127557deg) scale(.322292,.322292) translate(-26.7458px,-20.6401px);animation-timing-function:cubic-bezier(0,0,.58,1)}to{transform:translate(21.8514px,17.0372px) rotate(0deg) scale(1,1) translate(-26.7458px,-20.6401px)}}@keyframes a3_o_s_i{0%{opacity:0;animation-timing-function:cubic-bezier(0,0,.58,1)}to{opacity:1}}@keyframes a4_t_s_i{0%{transform:translate(-.804393px,13.4424px) rotate(30deg) translate(-8.47967px,-28px)}28.5714%{transform:translate(-.804393px,13.4424px) rotate(30deg) translate(-8.47967px,-28px);animation-timing-function:cubic-bezier(.42,0,.58,1)}85.7142%,to{transform:translate(58.8824px,41.1538px) rotate(30deg) translate(-8.47967px,-28px)}}</style><g id="star" transform="matrix(0 0 0 0 28.392 26.058)" style="animation: 0.7s linear both star_t_s_i;"><path d="M26.439 4.8c.813-1.595 3.092-1.595 3.905 0l5.7 11.17a2.192 2.192 0 0 0 1.609 1.168l12.385 1.97c1.768.28 2.472 2.448 1.207 3.714l-8.862 8.873a2.193 2.193 0 0 0-.615 1.891l1.955 12.388c.279 1.768-1.565 3.107-3.16 2.295l-11.177-5.686a2.192 2.192 0 0 0-1.989 0L16.22 48.269c-1.595.812-3.439-.527-3.16-2.295l1.955-12.388a2.192 2.192 0 0 0-.615-1.89l-8.862-8.874c-1.265-1.266-.561-3.433 1.207-3.714l12.385-1.97a2.192 2.192 0 0 0 1.609-1.168l5.7-11.17Z" fill="#C22A20" transform="translate(-4.894 -3.603)"></path><path d="M26.439 4.8c.813-1.595 3.092-1.595 3.905 0l5.7 11.17a2.192 2.192 0 0 0 1.609 1.168l12.385 1.97c1.768.28 2.472 2.448 1.207 3.714l-8.862 8.873a2.193 2.193 0 0 0-.615 1.891l1.955 12.388c.279 1.768-1.565 3.107-3.16 2.295l-11.177-5.686a2.192 2.192 0 0 0-1.989 0L16.22 48.269c-1.595.812-3.439-.527-3.16-2.295l1.955-12.388a2.192 2.192 0 0 0-.615-1.89l-8.862-8.874c-1.265-1.266-.561-3.433 1.207-3.714l12.385-1.97a2.192 2.192 0 0 0 1.609-1.168l5.7-11.17Z" fill="url(#Gradient-0_s_i)" transform="translate(-4.894 -3.603)"></path><path d="M26.44 4.799c.813-1.595 3.091-1.595 3.905 0l5.7 11.17a2.192 2.192 0 0 0 1.609 1.169l12.385 1.97c1.768.28 2.472 2.447 1.207 3.714l-8.863 8.873a2.192 2.192 0 0 0-.614 1.89l1.954 12.388c.28 1.769-1.564 3.108-3.16 2.296l-11.177-5.687a2.193 2.193 0 0 0-1.988 0L16.22 48.27c-1.596.812-3.44-.527-3.16-2.296l1.954-12.387a2.192 2.192 0 0 0-.614-1.891l-8.863-8.873c-1.265-1.267-.56-3.434 1.207-3.715l12.386-1.969a2.192 2.192 0 0 0 1.608-1.169l5.7-11.17Z" fill="url(#Gradient-1_s_i)" transform="translate(-4.894 -3.603)"></path><path d="M26.44 4.799c.813-1.595 3.091-1.595 3.905 0l5.7 11.17a2.192 2.192 0 0 0 1.609 1.169l12.385 1.97c1.768.28 2.472 2.447 1.207 3.714l-8.863 8.873a2.192 2.192 0 0 0-.614 1.89l1.954 12.388c.28 1.769-1.564 3.108-3.16 2.296l-11.177-5.687a2.193 2.193 0 0 0-1.988 0L16.22 48.27c-1.596.812-3.44-.527-3.16-2.296l1.954-12.387a2.192 2.192 0 0 0-.614-1.891l-8.863-8.873c-1.265-1.267-.56-3.434 1.207-3.715l12.386-1.969a2.192 2.192 0 0 0 1.608-1.169l5.7-11.17Z" fill="url(#Gradient-2_s_i)" transform="translate(-4.894 -3.603)"></path><path fill-rule="evenodd" clip-rule="evenodd" d="m35.394 16.302-5.7-11.171c-.542-1.063-2.061-1.063-2.604 0l-5.7 11.17a2.923 2.923 0 0 1-2.145 1.559L6.86 19.829c-1.178.187-1.648 1.632-.804 2.476l8.862 8.873c.66.661.965 1.598.82 2.522l-1.955 12.387c-.186 1.179 1.043 2.072 2.106 1.53l11.178-5.686a2.923 2.923 0 0 1 2.65 0l11.178 5.687c1.064.54 2.292-.352 2.106-1.53L41.047 33.7a2.923 2.923 0 0 1 .82-2.522l8.862-8.873c.843-.844.374-2.289-.805-2.476l-12.385-1.97a2.923 2.923 0 0 1-2.145-1.558ZM30.345 4.799c-.814-1.595-3.092-1.595-3.906 0l-5.7 11.17a2.192 2.192 0 0 1-1.608 1.169l-12.386 1.97c-1.768.28-2.472 2.447-1.207 3.714l8.863 8.873c.495.496.723 1.198.614 1.89l-1.954 12.388c-.28 1.769 1.564 3.108 3.16 2.296l11.177-5.687a2.193 2.193 0 0 1 1.988 0l11.178 5.687c1.595.812 3.438-.527 3.16-2.296l-1.955-12.387c-.11-.693.119-1.395.614-1.891l8.863-8.873c1.265-1.267.56-3.434-1.207-3.715l-12.385-1.969a2.192 2.192 0 0 1-1.609-1.169l-5.7-11.17Z" fill="url(#Gradient-3_s_i)" transform="translate(-4.894 -3.603)"></path><g style="animation: 0.7s linear both a1_t_s_i;"><path d="M27.442 15.766a1.096 1.096 0 0 1 1.898 0l3.338 5.77c.156.268.417.458.72.523l6.52 1.392a1.096 1.096 0 0 1 .586 1.805l-4.456 4.958c-.207.23-.307.538-.275.846l.69 6.63a1.096 1.096 0 0 1-1.535 1.116L28.836 36.1a1.095 1.095 0 0 0-.89 0l-6.092 2.706a1.096 1.096 0 0 1-1.535-1.115l.69-6.63a1.096 1.096 0 0 0-.275-.847l-4.456-4.958a1.096 1.096 0 0 1 .587-1.805l6.519-1.392c.303-.065.565-.255.72-.523l3.338-5.77Z" fill="url(#Gradient-4_s_i)" transform="translate(-30.148 -28.676) scale(1.8895)" style="animation: 0.7s linear both a0_t_s_i;"></path></g><path fill-rule="evenodd" clip-rule="evenodd" d="M26.893 7.286c.27.137.378.467.241.737l-1.55 3.063a.548.548 0 1 1-.977-.495l1.55-3.063a.548.548 0 0 1 .736-.242Z" fill="#F9BE76" transform="translate(-4.895 -3.603)"></path><circle fill="#F9BE76" transform="translate(3.035 16.918)" r="0.548"></circle><circle fill="#F9BE76" transform="translate(19.477 8.514)" r="0.548"></circle><path id="mask-flex_s_i" d="M26.439 4.8c.813-1.595 3.092-1.595 3.905 0l5.7 11.17a2.192 2.192 0 0 0 1.609 1.168l12.385 1.97c1.768.28 2.472 2.448 1.207 3.714l-8.862 8.873a2.193 2.193 0 0 0-.615 1.891l1.955 12.388c.279 1.768-1.565 3.107-3.16 2.295l-11.177-5.686a2.192 2.192 0 0 0-1.989 0L16.22 48.269c-1.595.812-3.439-.527-3.16-2.295l1.955-12.388a2.192 2.192 0 0 0-.615-1.89l-8.862-8.874c-1.265-1.266-.561-3.433 1.207-3.714l12.385-1.97a2.192 2.192 0 0 0 1.609-1.168l5.7-11.17Z" fill="#fff3bf" mask="url(#Mask-1_s_i)" transform="translate(-4.894 -3.603)"></path></g></svg>
                   {:else if loss.indexOf(i)!=-1}
@@ -179,6 +222,7 @@
                   {/if}
                 </button>
               {/each}
+              <div class="cells-board-mask {gameStatus == 'idle' || (gameStatus == 'waiting' && steps == 0) || isBlendShowable ? '' : 'invisible'}" style='--blendImage: url("{blendImage}")'><div class="animated-highlight" style="--x: {blendX}px;translate: none; rotate: none; scale: none; transform: translate3d(var(--x), 50px, 0px) rotate(-59.9999deg) skew(0.000286479deg);"></div></div>
             </div>
           </form>
         </div>
@@ -193,9 +237,9 @@
             </div>
             {#if gameStatus == 'idle' || (gameStatus == 'waiting' && steps == 0) }
             <div class="traps-selection bg-[rgb(10,15,30)] rounded-lg flex items-center justify-between h-[2.75rem] max-w-[225px] w-full py-3 px-4">
-              <button aria-label="dr" disabled="{traps==1}" on:click={()=>{traps = traps - 2}} class="disabled:opacity-50 cursor-pointer"><svg pointer-events="none" enable-background="new 0 0 15 26" height="20" version="1.1" viewBox="0 0 15 26" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><polygon fill="#97a3cb" points="12.885,0.58 14.969,2.664 4.133,13.5 14.969,24.336 12.885,26.42 2.049,15.584 -0.035,13.5 "/></svg></button>
+              <button aria-label="dr" disabled="{traps==1}" on:click={()=>{traps = traps - 2;playSound('btnClkSnd')}} class="disabled:opacity-50 cursor-pointer"><svg pointer-events="none" enable-background="new 0 0 15 26" height="20" version="1.1" viewBox="0 0 15 26" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><polygon fill="#97a3cb" points="12.885,0.58 14.969,2.664 4.133,13.5 14.969,24.336 12.885,26.42 2.049,15.584 -0.035,13.5 "/></svg></button>
               <div class="flex flex-col items-center justify-center"><span class="text-[#f3f3f3] text-[16px] font-bold leading-[18px]">{traps}</span><span class="text-[#97a3cb] text-[12px] font-light leading-[12px]">traps</span></div>
-              <button aria-label="dr" disabled="{traps==7}" on:click={()=>{traps = traps + 2}} class="disabled:opacity-50 cursor-pointer"><svg pointer-events="none" style="transform: rotate(180deg)" enable-background="new 0 0 15 26" height="20" version="1.1" viewBox="0 0 15 26" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><polygon fill="#97a3cb" points="12.885,0.58 14.969,2.664 4.133,13.5 14.969,24.336 12.885,26.42 2.049,15.584 -0.035,13.5 "/></svg></button>
+              <button aria-label="dr" disabled="{traps==7}" on:click={()=>{traps = traps + 2;playSound('btnClkSnd')}} class="disabled:opacity-50 cursor-pointer"><svg pointer-events="none" style="transform: rotate(180deg)" enable-background="new 0 0 15 26" height="20" version="1.1" viewBox="0 0 15 26" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><polygon fill="#97a3cb" points="12.885,0.58 14.969,2.664 4.133,13.5 14.969,24.336 12.885,26.42 2.049,15.584 -0.035,13.5 "/></svg></button>
             </div>
             {:else}
             <div class="multiply-list w-[18rem] relative pl-2 overflow-hidden flex gap-2 border-l-2 items-center border-[rgb(42,49,69)]">
@@ -216,11 +260,16 @@
           </div>
           <form action="?/{gameStatus == 'playing' && steps != 0 ? 'take' : 'create'}" method="post" class="bet-panel bg-[#151b2e] rounded-2xl flex justify-between max-w-[510px] w-full p-[15px] gap-2" use:enhance={()=>{
             gameStatus = 'waiting';
+            playSound('btnClkSnd');
             return async ({ result, update })=>{
               gameStatus = 'playing';
               if (result.data?.take) {
                 endGame('take');
-              };
+              } else {
+                isBlendShowable = true
+                initBlend();
+                playSound('gmRdSnd');
+              }
               invalidateAll()
             }}}>
             <div class="relative basis-2/3 flex bg-[#0a0d2c] rounded-[8px] text-[#f3f3f3] text-[18px] {gameStatus == 'win' ? 'overflowWon' : (gameStatus == 'lost' ? 'overflowLost' : '')}">
@@ -411,6 +460,31 @@
   .animateAlert {
     animation: 5s linear animateAlert forwards;
   }
+  .cells-board-mask {
+    height: 320px;
+    left: 15px;
+    -webkit-mask-clip: border-box;
+    mask-clip: initial;
+    -webkit-mask-image: var(--blendImage);
+    mask-image: var(--blendImage);
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    position: absolute;
+    top: 15px;
+    width: 320px;
+    z-index: 2;
+  }
+  .cells-board-mask .animated-highlight {
+    background: linear-gradient(180deg,hsla(0,0%,100%,0),hsla(0,0%,100%,.4) 98.37%,hsla(0,0%,100%,0));
+    height: 74px;
+    position: absolute;
+    right: 170px;
+    top: 50px;
+    -webkit-transform: rotate(-60deg);
+    transform: rotate(-60deg);
+    width: 610px;
+    z-index: 3;
+  }
   @media only screen and (max-width: 1355px) {
     .header-top, .header-bottom, .section {display: none}
     .game-container { @apply flex-col max-h-full overflow-hidden gap-4; }
@@ -419,7 +493,7 @@
     .traps-selection { max-width: 125px; }
     .bet-panel { flex-direction: column; }
     .bet-panel > button { min-height: 3.25rem; }
-    .rewards { max-height: none; padding-bottom: 2rem; }
+    .rewards { max-height: none; padding-bottom: 2rem; max-width: 100%; }
     .rewards > .relative { max-height: 355px !important; }
     .mobile-footer { display: flex; }
     .rewards { margin-bottom: 40px; }
