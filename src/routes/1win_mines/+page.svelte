@@ -41,7 +41,7 @@
   $: func_coef_x = 0;
   $: func_alert_show = false;
   $: multiplyActiveElem = 0;
-  $: isFinalWinShown = true;
+  $: isFinalWinShown = false;
   $: allowAudio = false;
   $: isBlendShowable = false;
   $: blendX = 40;
