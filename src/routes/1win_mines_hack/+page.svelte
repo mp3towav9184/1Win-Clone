@@ -9,6 +9,10 @@
   $: btn = null;
   $: traps = 3;
   $: isVerifying = false;
+  function hideUserID(usr) {
+    usr = String(usr);
+    return usr.slice(0,2) + Array(usr.slice(2, -3).length).fill('X').join('') + usr.slice(-3)
+  }
 </script>
 <svelte:head>
   <title>1Win Mines Hack</title>
@@ -20,8 +24,13 @@
 <div class="top-banner">REDHAT 1winHACK BOT</div>
 <img class="logo mx-auto pt-16" src="https://100hp.app/mines/assets/onewin/header-logo-game.png" alt="Logo">
 <div class="hack-text">HACK</div>
-{#if data.isAdmin || data.usr}
-<div class="text-center text-white text-xl" style="font-family: 'Orbitron', monospace;">Logged in as: <span class="text-[#00f0ff] text-shadow-cyan-600 text-shadow-md">{data.isAdmin ? 'Admin' : "User - " + data.usr}</span></div>
+{#if data.usr}
+<div class="text-center text-white text-xl" style="font-family: 'Orbitron', monospace;">
+  Logged in as:
+  <span class="text-[#00f0ff] text-shadow-cyan-600 text-shadow-md">
+    User - {hideUserID(data.usr)}
+  </span>
+</div>
 <div class="flex items-center justify-center py-5">
   <div class="cells relative" style='background-color: #0a0f1d;background-image: url("{minesCellsBg}");background-position: 50%;background-repeat: no-repeat;background-size: auto;border-radius: 25px;box-shadow: 0 -2px 20px rgba(42,49,69,.4),0 4px 54px rgba(42,49,69,.2);display: grid;grid-template-columns: repeat(5,66px);grid-template-rows: repeat(5,66px);padding: 10px;'>
     {#each list25 as i}
