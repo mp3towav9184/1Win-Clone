@@ -486,7 +486,7 @@
     width: 610px;
     z-index: 3;
   }
-  @media only screen and (max-width: 1355px) {
+  @media only screen and (max-width: 1510px) {
     .header-top, .header-bottom, .section {display: none}
     .game-container { @apply flex-col max-h-full overflow-hidden gap-4; }
     .hom { @apply hidden; }
