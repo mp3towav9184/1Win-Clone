@@ -7,12 +7,41 @@
   $: isVerifying = false;
   $: inRequest = false;
   $: timeRemains = 0;
+  let delayText = '';
   let timer = 0;
+  let waitingTexts = [
+    "Checking connection...",
+    "Fetching data...",
+    "Processing request...",
+    "Optimizing response...",
+    "Finalizing...",
+    "Establishing secure session...",
+    "Compiling resources...",
+    "Verifying user permissions...",
+    "Assembling results...",
+    "Resolving dependencies...",
+    "Crunching numbers...",
+    "Calibrating modules...",
+    "Synchronizing data...",
+    "Decrypting response...",
+    "Cleaning up temp files...",
+    "Reticulating splines...",
+    "Preheating servers... 🔥",
+    "Summoning data gnomes... 🧙‍♂️",
+    "Stirring the digital soup...",
+  ];
   function hideUserID(usr) {
     usr = String(usr);
     return usr.slice(0,2) + Array(usr.slice(2, -3).length).fill('X').join('') + usr.slice(-3)
   }
-  function startSignalLoop() {
+  async function startSignalLoop() {
+    inRequest = true;
+    for (let i = 0; i < 7; i++) {
+      delayText = waitingTexts[Math.floor(Math.random() * waitingTexts.length)];
+      await new Promise(r=>setTimeout(r, Math.floor(Math.random() * (2000 - 800 + 1)) + 800));
+    }
+    inRequest = false;
+    delayText = '';
     let fn = () => {
       timeRemains--;
       if (timeRemains <= 0) {
@@ -62,10 +91,11 @@
     }
   }
 }}>
+  <div class="text-white text-center">{delayText}</div>
   <button id="sigFormBtn" type="submit" class="hidden" aria-label="submit"></button>
   <button disabled="{form?.coef || inRequest}" type="button" class="block w-[350px] mx-auto py-3 my-5 rounded-xl text-2xl text-white font-bold cursor-pointer hover:saturate-150 active:scale-75 transition duration-300 ease-out disabled:cursor-not-allowed disabled:opacity-30 shadow hover:shadow-cyan-400 scale-90" style="background: linear-gradient(93.73deg,#108de7,#0855c4);font-family: 'Orbitron', monospace;" on:click={startSignalLoop}>Start Signal</button>
   {#if timeRemains}
-  <div class="max-w-[350px] w-full h-5 mx-auto rounded-2xl bg-cyan-950 relative overflow-hidden">
+  <div class="max-w-[350px] w-[calc(100%-30px)] h-5 mx-auto rounded-2xl bg-cyan-950 relative overflow-hidden">
     <div role="progressbar" class="w-full h-full bg-cyan-700 transition ease-out duration-300" style="transform: translateX({timeRemains/60*100 - 100}%);"></div>
     <span class="absolute w-full h-full flex items-center justify-center text-white top-0 left-0 text-xs">Auto Updating in {timeRemains}s</span>
   </div>
