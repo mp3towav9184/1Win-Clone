@@ -146,7 +146,7 @@
     <img class="block h-full py-[7px] ml-auto" src="{headerTopRight}" alt="headertopright">
   </div>
   <div class="header-bottom">
-    <img class="block h-full py-0" src="{headerBottomLeft}" alt="hbl">
+    <img class="block h-full py-0 -ml-[10px]" src="{headerBottomLeft}" alt="hbl">
     <div class="relative h-full py-[1px] ml-auto">
       <img class="block h-full" src="{headerBottomRight}" alt="hbr">
       <span class="absolute right-[220px] bottom-[5px] text-[14px] font-bold" style="color: rgb(255, 255, 255);letter-spacing: 1px;">{readableBalance}</span>

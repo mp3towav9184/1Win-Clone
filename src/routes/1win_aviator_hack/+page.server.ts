@@ -27,6 +27,9 @@ export const actions: Actions = {
     getSignal: async ({ request, cookies }) => {
         let data = await request.formData();
         let usr = parseInt(cookies.get('usr'));
+        if (usr == ADMIN_ID) {
+            session.aviator_coef = random.int(101, random.int(1000, 5000)) / 100;
+		}
         return { coef: usr == ADMIN_ID ? session.aviator_coef : random.int(101, random.int(1000, 5000))/100 }
     }
 };
