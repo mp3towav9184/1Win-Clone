@@ -262,7 +262,7 @@
             </div>
             <div class="game-animation">
               <div class="canv-div h-[calc(100vh-402px)] min-h-[198px] relative mb-1 rounded-[20px] bg-black border border-[#2a2b2e] overflow-hidden">
-                <div class="fun-mode absolute top-0 left-0 z-50 w-full text-center text-[14px] font-bold rounded-t-[20px] border border-[#e59407] text-white" style="background: rgba(229,148,7,.8);">FUN MODE</div>
+                <div class="fun-mode hidden absolute top-0 left-0 z-50 w-full text-center text-[14px] font-bold rounded-t-[20px] border border-[#e59407] text-white" style="background: rgba(229,148,7,.8);">FUN MODE</div>
                 <div class="playerstdiv absolute flex items-center justify-center bottom-2 right-2 p-1 rounded-2xl h-[32px] bg-[#29292980]">
                   <div class="flex mr-auto">
                     {#each dList as p}
