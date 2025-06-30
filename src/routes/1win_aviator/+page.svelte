@@ -15,12 +15,14 @@
   export let data;
   $: readableBalance = data.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   let bets = [1, 1];
-  let isBet1Active = false;
-  let isBet2Active = false;
+  let activeBets = [false, false];
+  let runningBets = [false, false];
   $: if (bets[0] > 100) { bets[0] = 100 }
   $: if (bets[1] > 100) { bets[1] = 100 }
   $: if (bets[0] < 0) { bets[0] = 0 }
   $: if (bets[1] < 0) { bets[1] = 0 }
+  let gameStatus : 'idle' | 'playing' | 'ended' = 'idle';
+  let gmCoef = 1;
   let totalPeople = 3;
   let totalPeopleWin = 0; // Doller
   let remainingPeople = 0;
@@ -28,27 +30,38 @@
   $: betHistory = Array.from({length: totalPeople > 20 ? 20 : totalPeople}).map(_=>({player: 'd***' + parseInt(Math.random()*9), bet: 100, x: null, win: null, av: Math.floor(Math.random() * 70) + 1}));
   let lastBbtnclk = 0;
   let coefHistory = Array.from({length: 40}).map(_ => (Math.random() * (11 - 1) + 1).toFixed(2));
+  let _winCoef = 1;
+  let _winUSD = 1;
+  let _winShow = false;
   function getColor(coef) {
     if (coef < 2) return '#34b4ff';
     if (coef < 10) return '#913ef8';
     return '#c017b4';
   }
   function getCoef() {
-    if (isBet1Active || isBet2Active) {
+    if (activeBets[0] || activeBets[1]) {
       return data.aviator_coef;
     }
     return parseFloat((Math.random() * 14 + 1).toFixed(2));
   }
   async function onGameStart() {
+    gameStatus = 'idle';
     dList = Array.from({length: 3}).map(_=>Math.floor(Math.random() * 70) + 1);
     totalPeople = 3;
     totalPeopleWin = 0;
+    runningBets = [false, false];
+    let ispld = false;
     await new Promise(r => setTimeout(r, Math.floor(Math.random() * (1000 - 300 + 1)) + 300))
     while (window.currentCoef != window.targetCoef) {
       if (window.currentCoef == 1) {
+        if (activeBets[0]) runningBets[0] = true;
+        if (activeBets[1]) runningBets[1] = true;
+        if (gameStatus != 'idle') gameStatus = "idle";
         totalPeople = totalPeople + Math.floor(Math.random() * (90 - 40 + 1)) + 40;
         remainingPeople = totalPeople;
       } else {
+        if (!ispld) {playSound('start'); ispld = true};
+        if (gameStatus != 'playing') gameStatus = "playing";
         let ri = Math.floor(Math.random() * betHistory.length);
         if (!betHistory[ri].x) {
           betHistory[ri].x = window.currentCoef.toFixed(2);
@@ -66,13 +79,52 @@
     }
   }
   function onGameEnd() {
+    playSound('flew');
+    gameStatus = 'ended';
     let ex = window.targetCoef;
     coefHistory = [ex, ...coefHistory.slice(0, 39)];
+    if (runningBets[0]) {runningBets[0] = false; activeBets[0] = false}
+    if (runningBets[1]) {runningBets[1] = false; activeBets[1] = false}
+  }
+  function showWinAlert(i) {
+    playSound("win");
+    _winCoef = gmCoef;
+    _winUSD = bets[i]*_winCoef;
+    activeBets[i] = false; runningBets[i] = false; data.balance+=_winUSD;
+    _winShow = true;
+    setTimeout(() => {
+      _winShow = false;
+    }, 3500);
+  }
+  function playAudioSegment(startTime, endTime, volume = 1) {
+    let audioElement = document.getElementById('spriteAudio');
+    audioElement.volume = volume;
+    audioElement.currentTime = startTime;
+    audioElement.play();
+    const onTimeUpdate = () => {
+      if (audioElement.currentTime >= endTime) {
+        audioElement.pause();
+        audioElement.removeEventListener('timeupdate', onTimeUpdate);
+      }
+    };
+    audioElement.addEventListener('timeupdate', onTimeUpdate);
+  }
+  function playSound(type : 'start' | 'flew' | 'win' | 'click') {
+    if (type == 'flew') {
+      playAudioSegment(2, 4, 0.3)
+    } else if (type == 'start') {
+      playAudioSegment(6.6, 7, 1.0)
+    } else if (type == 'win') {
+      playAudioSegment(8.6, 11, 0.3)
+    } else if (type == 'click') {
+      playAudioSegment(0, 1.5, 0.5)
+    }
   }
   onMount(async ()=>{
     window.getCoef = getCoef;
     window.onGameStart = onGameStart;
     window.onGameEnd = onGameEnd;
+    window.onCoefChange = ()=>{gmCoef = window.currentCoef}
     function onResize() {
       let blh = document.querySelector('.game-area').offsetHeight - 220 + 'px';
       document.querySelector('.bet-list').style.maxHeight = blh;
@@ -84,6 +136,9 @@
     onResize();
     let rmCav = await initCanvas();
     setInterval(invalidateAll, 3000);
+    let bgM = document.getElementById('bgMusic');
+    bgM.volume = 0.1;
+    bgM.play();
     return () => {
       window.removeEventListener('resize', onResize)
       rmCav();
@@ -94,6 +149,9 @@
 <svelte:head>
   <title>1win</title>
 </svelte:head>
+
+<audio id="bgMusic" src="https://aviator-demo.spribegaming.com/assets/sounds/bg_music.mp3" loop></audio>
+<audio id="spriteAudio" src="https://aviator-demo.spribegaming.com/assets/sounds/sprite_audio.mp3"></audio>
 
 <div id="main-container">
   <div class="header-top">
@@ -120,6 +178,19 @@
       <button class="sticky -mr-[34px] hom z-10 top-[40px] left-[38px] bg-[#2b3843] w-[34px] h-[34px] min-w-[34px] min-h-[34px] max-w-[34px] max-h-[34px] rounded-[4px] cursor-pointer" aria-label="oij">
         <img class="scale-[.65]" src="{fullscreenIcon}" alt="oks">
       </button>
+
+      <div class="win-alert {_winShow ? '' : 'hidden'} text-white absolute top-2.5 left-1/2 -translate-x-1/2 z-50 overflow-hidden w-[320px] bg-[#123405] border border-[#427f00] justify-around rounded-[26px] text-center flex h-[56px] items-center py-[5px] mb-4">
+        <div class="multp flex flex-col justify-center w-full h-full px-2.5">
+          <div class="text-[12px] leading-none text-[#9ea0a3]"> You have cashed out! </div>
+          <div class="text-[20px] leading-none flex items-center justify-center mt-[3px]">{_winCoef.toFixed(2)}x</div>
+        </div>
+        <div class="wcl bg-[#4eaf11] w-full px-[26px] font-bold rounded-[23px] flex items-center justify-center overflow-hidden relative min-w-[120px] ml-auto h-full flex-col">
+          <div class="whitespace-nowrap text-[14px] z-[2] leading-none" style="text-shadow: 0 1px 2px rgba(0,0,0,.5);">Win USD</div>
+          <div class="mt-[2px] min-w-[60px] flex justify-center items-center h-[16px] text-[20px] font-bold z-[2] leading-none" style="text-shadow: 0 1px 2px rgba(0,0,0,.5);">{_winUSD.toFixed(2)}</div>
+        </div>
+        <button class="px-[8px] text-[#d2d2d2] cursor-pointer bg-transparent border-0 outline-0 text-2xl font-bold opacity-50 leading-none scale-y-75" style="text-shadow: 0 1px 0 #97a4ae;">x</button>
+      </div>
+
       <div class="game-area bg-[#0e0e0e] w-full h-full relative pt-[40px]">
         <div class="header bg-[#1b1c1d] w-full h-[40px] absolute top-0 left-0 flex items-center p-[4px]">
           <div class="mx-[4px] w-[84px] h-full hicon mr-auto"></div>
@@ -215,7 +286,7 @@
                     <button class="text-[#a3a3a3] cursor-pointer grow text-center rounded-[32px] text-[12px] hover:text-[#d0021b] transition duration-300 ease-in-out" style="letter-spacing: -.3px;">Auto</button>
                   </div>
                   <div class="m-auto flex justify-center gap-2 items-center pt-2 w-full">
-                    <div class="bet-block flex flex-col justify-center items-center text-center w-[140px]">
+                    <div class="bet-block flex flex-col justify-center items-center text-center w-[140px] {activeBets[i] ? 'opacity-60 prvntcur' : ''}">
                       <div class="h-[32px] text-[16px] text-center flex justify-between items-center rounded-[32px] bg-[#141516] font-bold p-1">
                         <button on:click={()=>{bets[i] = bets[i] - 0.1}} aria-label="minus" class="rounded-full w-[24px] h-[24px] cursor-pointer text-[#000000b3] text-center font-bold" style="background: #2c2d30 url(https://aviator-demo.spribegaming.com/minus-grey.337d79958d035ae8.svg) no-repeat center center;"></button>
                         <input type="text" inputmode="decimal" placeholder="0.1" class="w-[calc(100%-35px)] border-0 outline-0 bg-transparent text-[#ccc] font-bold text-center" value={bets[i].toFixed(2)} on:focusout={function () {bets[i] = parseFloat(this.value)}}>
@@ -228,10 +299,26 @@
                         <button class="w-[68px] h-[24px] bg-[#141516] cursor-pointer rounded-[64px] text-[#83878e] text-center" on:click={()=>{if (lastBbtnclk != '10' + i){bets[i] = 0;}; bets[i] = bets[i] + 10; lastBbtnclk = '10' + i}}>10</button>
                       </div>
                     </div>
-                    <button class="betbtngn max-w-[calc(100%-148px)] w-full flex flex-col justify-center items-center outline-4 outline-[#141516] text-[#fafafa] h-full min-h-[80px] text-[22px] cursor-pointer bg-[#28a909] border-1 border-[#b2f2a3] text-center rounded-[12px] p-2 hover:bg-[#36cb12] active:border-[#1c7430] active:translate-y-[1px] transition duration-300 ease-in-out" style="font-variant-numeric: lining-nums tabular-nums;">
+                    {#if !activeBets[i]}
+                    <button class="betbtngn max-w-[calc(100%-148px)] w-full flex flex-col justify-center items-center outline-4 outline-[#141516] text-[#fafafa] h-full min-h-[80px] text-[22px] cursor-pointer bg-[#28a909] border-1 border-[#b2f2a3] text-center rounded-[12px] p-2 hover:bg-[#36cb12] active:border-[#1c7430] active:translate-y-[1px] transition duration-300 ease-in-out" style="font-variant-numeric: lining-nums tabular-nums;" on:click={()=>{activeBets[i] = true; data.balance-=bets[i]; playSound('click')}}>
                       <span>Bet</span>
                       <span>{bets[i].toFixed(2)} USD</span>
                     </button>
+                    {:else}
+                      {#if runningBets[i] && gameStatus == 'playing'}
+                      <button class="betbtngnco max-w-[calc(100%-148px)] w-full flex flex-col justify-center items-center outline-4 outline-[#141516] text-[#fafafa] h-full min-h-[80px] text-[22px] cursor-pointer bg-[#d07206] border-1 border-[#ffbd71] text-center rounded-[12px] p-2 hover:bg-[#f58708] active:border-[#c69500] active:translate-y-[1px] transition duration-300 ease-in-out" style="font-variant-numeric: lining-nums tabular-nums;" on:click={()=>{showWinAlert(i)}}>
+                        <span>Cash Out</span>
+                        <span>{(bets[i] * gmCoef).toFixed(2)} USD</span>
+                      </button>
+                      {:else}
+                      <button class="betbtngncl max-w-[calc(100%-148px)] w-full flex flex-col justify-center items-center outline-4 outline-[#141516] text-[#fafafa] h-full min-h-[80px] text-[22px] cursor-pointer bg-[#cb011a] border-1 border-[#ff7171] text-center rounded-[12px] p-2 hover:bg-[#f7001f] active:border-[#b21f2d] active:translate-y-[1px] transition duration-300 ease-in-out" style="font-variant-numeric: lining-nums tabular-nums;" on:click={()=>{activeBets[i] = false; data.balance+=bets[i]; playSound('click')}}>
+                        <span>Cancel</span>
+                        {#if gameStatus == 'playing'}
+                        <span class="text-[14px] font-bold opacity-80">Waiting for next round</span>
+                        {/if}
+                      </button>
+                      {/if}
+                    {/if}
                   </div>
                 </div>
               </div>
@@ -293,5 +380,46 @@
   }
   .betbtngn:focus {
     box-shadow: 0 0 0 .2rem #48b46180;
+  }
+  .prvntcur * {
+    cursor: default !important;
+  }
+  .wcl::before {
+    content: " ";
+    position: absolute;
+    background: url(https://aviator-demo.spribegaming.com/win-icon-copy.6a5f7c6a70530963.svg) no-repeat;
+    width: 31px;
+    height: 31px;
+    left: 0;
+    opacity: .5;
+  }
+  .wcl::after {
+    content: " ";
+    position: absolute;
+    background: url(https://aviator-demo.spribegaming.com/win-icon.2e1ac1503318fc63.svg) no-repeat;
+    width: 31px;
+    height: 31px;
+    right: 0;
+    opacity: .5;
+  }
+  @keyframes winAnim {
+    0% {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(40px);
+    }
+    10%, 90% {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0px);
+    }
+    100% {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-40px);
+    }
+  }
+  .win-alert {
+    animation: winAnim 3.1s linear forwards;
   }
 </style>

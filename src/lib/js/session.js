@@ -2,7 +2,7 @@
 export default {
 	balance: parseFloat(Math.floor(Math.random() * (8000 - 1050 + 1)) + 1050 + Math.random()),
 	mines_traps: [],
-	aviator_coef: null,
+	aviator_coef: parseFloat((Math.random() * (13 - 1) + 1).toFixed(2)),
 	coef: {
 		1: [
 			0.99,

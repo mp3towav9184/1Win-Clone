@@ -35,6 +35,7 @@ export default async function init() {
   let plane1Img = await loadImage('https://aviator-demo.spribegaming.com/assets/images/canvas/plane/spribe/plane-1.svg');
   let plane2Img = await loadImage('https://aviator-demo.spribegaming.com/assets/images/canvas/plane/spribe/plane-2.svg');
   let plane3Img = await loadImage('https://aviator-demo.spribegaming.com/assets/images/canvas/plane/spribe/plane-3.svg');
+  let planes = [plane0Img, plane1Img, plane2Img, plane3Img];
   let blurBlueImg = await loadImage(`data:image/svg+xml,%3Csvg%20width%3D%22438%22%20height%3D%22334%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cdefs%3E%3Cfilter%20x%3D%22-70.1%25%22%20y%3D%22-166.7%25%22%20width%3D%22240.2%25%22%20height%3D%22433.3%25%22%20filterUnits%3D%22objectBoundingBox%22%20id%3D%22a%22%3E%3CfeGaussianBlur%20stdDeviation%3D%2250%22%20in%3D%22SourceGraphic%22%2F%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%3Cellipse%20filter%3D%22url(%23a)%22%20cx%3D%22309%22%20cy%3D%221357%22%20rx%3D%22107%22%20ry%3D%2245%22%20transform%3D%22translate(-90%20-1190)%22%20fill%3D%22%23${'34b4ff'}%22%20fill-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E`);
   let blurPurpleImg = await loadImage(`data:image/svg+xml,%3Csvg%20width%3D%22438%22%20height%3D%22334%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cdefs%3E%3Cfilter%20x%3D%22-70.1%25%22%20y%3D%22-166.7%25%22%20width%3D%22240.2%25%22%20height%3D%22433.3%25%22%20filterUnits%3D%22objectBoundingBox%22%20id%3D%22a%22%3E%3CfeGaussianBlur%20stdDeviation%3D%2250%22%20in%3D%22SourceGraphic%22%2F%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%3Cellipse%20filter%3D%22url(%23a)%22%20cx%3D%22309%22%20cy%3D%221357%22%20rx%3D%22107%22%20ry%3D%2245%22%20transform%3D%22translate(-90%20-1190)%22%20fill%3D%22%23${'913ef8'}%22%20fill-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E`);
   let blurPinkImg = await loadImage(`data:image/svg+xml,%3Csvg%20width%3D%22438%22%20height%3D%22334%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cdefs%3E%3Cfilter%20x%3D%22-70.1%25%22%20y%3D%22-166.7%25%22%20width%3D%22240.2%25%22%20height%3D%22433.3%25%22%20filterUnits%3D%22objectBoundingBox%22%20id%3D%22a%22%3E%3CfeGaussianBlur%20stdDeviation%3D%2250%22%20in%3D%22SourceGraphic%22%2F%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%3Cellipse%20filter%3D%22url(%23a)%22%20cx%3D%22309%22%20cy%3D%221357%22%20rx%3D%22107%22%20ry%3D%2245%22%20transform%3D%22translate(-90%20-1190)%22%20fill%3D%22%23${'c017b4'}%22%20fill-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E`);
@@ -81,7 +82,10 @@ export default async function init() {
     // Coef Blur Config
     (()=>{
       if (window.showcredit) return;
-      if (!window.flewaway) window.currentCoef += Math.random() * (0.02 - 0.001) + 0.001;
+      if (!window.flewaway) {
+        window.currentCoef += Math.random() * (0.02 - 0.001) + 0.001;
+        window.onCoefChange();
+      }
       ctx.save();
       ctx.translate(canvas.width/2, canvas.height/2);
       if (isMobile) {
@@ -276,7 +280,7 @@ export default async function init() {
       ctx.translate(0, canvas.height);
       if (timestamp - prevPlaneReplaceTime > 100) {prevPlaneID++;prevPlaneReplaceTime=timestamp};
       if (prevPlaneID >= 4) prevPlaneID = 0;
-      let pln = eval(`plane${prevPlaneID}Img`);
+      let pln = planes[prevPlaneID];
       if (isMobile) {
         ctx.scale(.7, .7);
       }
