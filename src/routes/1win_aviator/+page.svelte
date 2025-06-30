@@ -196,6 +196,7 @@
           <div class="mx-[4px] w-[84px] h-full hicon mr-auto"></div>
           <div class="text-[#9b9c9e] text-[15px] mr-[4px]"><span class="font-bold text-[#28a909] text-[15px]">{readableBalance}</span> USD</div>
           <div class="m-[4px]"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"><path d="M7.3476 8.4539c-.3555 0-.6426-.294-.6426-.6495 0-.3623.2803-.6494.6426-.6494h9.2969a.6448.6448 0 0 1 .6494.6494c0 .3555-.2871.6495-.6494.6495H7.3476Zm0 4.1972c-.3555 0-.6426-.2939-.6426-.6494 0-.3623.2803-.6494.6426-.6494h9.2969a.6448.6448 0 0 1 .6494.6494c0 .3555-.2871.6494-.6494.6494H7.3476Zm0 4.1973c-.3555 0-.6426-.294-.6426-.6494 0-.3623.2803-.6494.6426-.6494h9.2969a.6448.6448 0 0 1 .6494.6494c0 .3554-.2871.6494-.6494.6494H7.3476Z" fill="#767B85"/></svg></div>
+          <div style="margin: 4px;width: 24px;height: 24px;cursor: pointer;background: url(https://aviator-next.spribegaming.com/chat.61cb237360b103af.svg) no-repeat center center;"></div>
         </div>
         <div class="secondary-container flex gap-1 p-[4px]">
           <div class="bet-history bg-[#1b1c1d] flex flex-col h-full min-w-[410px] rounded-[20px] p-[8px] pb-0">
