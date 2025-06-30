@@ -13,7 +13,8 @@
 	import { onMount } from "svelte";
 	import { invalidateAll } from "$app/navigation";
   export let data;
-  $: readableBalance = data.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  let balance = parseFloat(String(data.balance));
+  $: readableBalance = balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   let bets = [1, 1];
   let activeBets = [false, false];
   let runningBets = [false, false];
@@ -90,7 +91,7 @@
     playSound("win");
     _winCoef = gmCoef;
     _winUSD = bets[i]*_winCoef;
-    activeBets[i] = false; runningBets[i] = false; data.balance+=_winUSD;
+    activeBets[i] = false; runningBets[i] = false; balance+=_winUSD;
     _winShow = true;
     setTimeout(() => {
       _winShow = false;
@@ -135,7 +136,6 @@
     window.addEventListener('resize', onResize)
     onResize();
     let rmCav = await initCanvas();
-    setInterval(invalidateAll, 3000);
     let bgM = document.getElementById('bgMusic');
     bgM.volume = 0.1;
     bgM.play();
@@ -300,7 +300,7 @@
                       </div>
                     </div>
                     {#if !activeBets[i]}
-                    <button class="betbtngn max-w-[calc(100%-148px)] w-full flex flex-col justify-center items-center outline-4 outline-[#141516] text-[#fafafa] h-full min-h-[80px] text-[22px] cursor-pointer bg-[#28a909] border-1 border-[#b2f2a3] text-center rounded-[12px] p-2 hover:bg-[#36cb12] active:border-[#1c7430] active:translate-y-[1px] transition duration-300 ease-in-out" style="font-variant-numeric: lining-nums tabular-nums;" on:click={()=>{activeBets[i] = true; data.balance-=bets[i]; playSound('click')}}>
+                    <button class="betbtngn max-w-[calc(100%-148px)] w-full flex flex-col justify-center items-center outline-4 outline-[#141516] text-[#fafafa] h-full min-h-[80px] text-[22px] cursor-pointer bg-[#28a909] border-1 border-[#b2f2a3] text-center rounded-[12px] p-2 hover:bg-[#36cb12] active:border-[#1c7430] active:translate-y-[1px] transition duration-300 ease-in-out" style="font-variant-numeric: lining-nums tabular-nums;" on:click={()=>{activeBets[i] = true; balance-=bets[i]; playSound('click'); invalidateAll()}}>
                       <span>Bet</span>
                       <span>{bets[i].toFixed(2)} USD</span>
                     </button>
@@ -311,7 +311,7 @@
                         <span>{(bets[i] * gmCoef).toFixed(2)} USD</span>
                       </button>
                       {:else}
-                      <button class="betbtngncl max-w-[calc(100%-148px)] w-full flex flex-col justify-center items-center outline-4 outline-[#141516] text-[#fafafa] h-full min-h-[80px] text-[22px] cursor-pointer bg-[#cb011a] border-1 border-[#ff7171] text-center rounded-[12px] p-2 hover:bg-[#f7001f] active:border-[#b21f2d] active:translate-y-[1px] transition duration-300 ease-in-out" style="font-variant-numeric: lining-nums tabular-nums;" on:click={()=>{activeBets[i] = false; data.balance+=bets[i]; playSound('click')}}>
+                      <button class="betbtngncl max-w-[calc(100%-148px)] w-full flex flex-col justify-center items-center outline-4 outline-[#141516] text-[#fafafa] h-full min-h-[80px] text-[22px] cursor-pointer bg-[#cb011a] border-1 border-[#ff7171] text-center rounded-[12px] p-2 hover:bg-[#f7001f] active:border-[#b21f2d] active:translate-y-[1px] transition duration-300 ease-in-out" style="font-variant-numeric: lining-nums tabular-nums;" on:click={()=>{activeBets[i] = false; balance+=bets[i]; playSound('click')}}>
                         <span>Cancel</span>
                         {#if gameStatus == 'playing'}
                         <span class="text-[14px] font-bold opacity-80">Waiting for next round</span>

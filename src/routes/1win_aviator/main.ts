@@ -23,7 +23,7 @@ export default async function init() {
   window.flewaway = false;
   window.showcredit = true;
   window.currentCoef = 1;
-  window.targetCoef = window.getCoef();
+  window.targetCoef = 2;
 
   
   let canvas : HTMLCanvasElement = document.getElementById('canvas');
@@ -147,6 +147,7 @@ export default async function init() {
       idleProgress-=.6;
       if (idleProgress <= 0) {
         idleProgress = 100;
+        window.targetCoef = window.getCoef();
         window.showcredit = false;
         window.rotate = true;
         window.animateplane = true;
@@ -192,7 +193,7 @@ export default async function init() {
 					window.flewaway = false;
 					window.showcredit = true;
 					window.currentCoef = 1;
-					window.targetCoef = window.getCoef();
+					window.targetCoef = 2;
 					prevPlaneID = 0;
 					prevPlaneReplaceTime = 0;
 					rotateDegree = 0;
