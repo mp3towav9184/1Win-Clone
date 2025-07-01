@@ -73,7 +73,7 @@
   </span>
 </div>
 <div class="relative text-white mx-auto w-42 h-42 my-8">
-  <div class="cf w-full h-full flex items-center justify-center text-2xl font-bold rounded-full {form?.coef ? 'active' : ''}">{form?.coef?.toFixed(2) || '0.00'}x</div>
+  <div class="cf w-full h-full flex items-center justify-center text-xl font-bold rounded-full {form?.coef ? 'active' : ''}">{form?.coef?.toFixed(2) || '0.00'}x</div>
   <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-r-violet-600 border-l-rose-800 scale-[0.5] rotate-[90deg] {form?.coef ? 'active' : ''}"></div>
   <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-t-blue-600 border-b-pink-600 scale-[0.6] rotate-[75deg] {form?.coef ? 'active' : ''}"></div>
   <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-r-teal-600 border-l-yellow-600 scale-[0.7] rotate-[60deg] {form?.coef ? 'active' : ''}"></div>
@@ -188,7 +188,7 @@ return async ({ result, update }) => {
     animation: spin 2s linear infinite;
     filter: contrast(150%) saturate(500%);
   }
-  .cf::after {
+  /* .cf::after {
     content: " ";
     position: absolute;
     top: 0px;
@@ -197,7 +197,6 @@ return async ({ result, update }) => {
     height: 100%;
     border-radius: calc(infinity * 1px);
     overflow: hidden;
-    /* border: 5px dotted theme(--color-cyan-400); */
     outline: 5px dotted theme(--color-cyan-400);
     outline-offset: -3px;
     box-shadow: 0px 0px 20px 8px theme(--color-cyan-800), inset 0px 0px 20px 8px theme(--color-cyan-800);
@@ -212,5 +211,5 @@ return async ({ result, update }) => {
   @keyframes coefAnim {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
-  }
+  } */
 </style>

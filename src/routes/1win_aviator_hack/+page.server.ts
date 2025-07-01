@@ -6,6 +6,26 @@ import type { Actions, PageServerLoad } from "./$types";
 // TIME IS IN MS
 let ADMIN_ID = 339339339;
 
+
+function genCoef() {
+    let a = random.int(1, 100);
+    let coef: number;
+    if (a <= 80) {
+        // 80%: 1 to 15
+        coef = random.int(101, 1500) / 100;
+    } else if (a <= 90) {
+        // 10%: 1 to 100
+        coef = random.int(101, 10000) / 100;
+    } else if (a <= 97) {
+        // 7%: 1 to 6
+        coef = random.int(101, 600) / 100;
+    } else {
+        // 3%: 1 to 2
+        coef = random.int(101, 200) / 100;
+    }
+    return coef;
+}
+
 export const load: PageServerLoad = async ({ cookies }) => {
     let usr = parseInt(cookies.get('usr'));
     return { usr, isAdmin: usr == ADMIN_ID };
@@ -28,8 +48,8 @@ export const actions: Actions = {
         let data = await request.formData();
         let usr = parseInt(cookies.get('usr'));
         if (usr == ADMIN_ID) {
-            session.aviator_coef = random.int(101, random.int(1000, 5000)) / 100;
+            session.aviator_coef = genCoef();
 		}
-        return { coef: usr == ADMIN_ID ? session.aviator_coef : random.int(101, random.int(1000, 3000))/100 }
+        return { coef: usr == ADMIN_ID ? session.aviator_coef : genCoef() }
     }
 };
