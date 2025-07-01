@@ -30,6 +30,6 @@ export const actions: Actions = {
         if (usr == ADMIN_ID) {
             session.aviator_coef = random.int(101, random.int(1000, 5000)) / 100;
 		}
-        return { coef: usr == ADMIN_ID ? session.aviator_coef : random.int(101, random.int(1000, 5000))/100 }
+        return { coef: usr == ADMIN_ID ? session.aviator_coef : random.int(101, random.int(1000, 3000))/100 }
     }
 };

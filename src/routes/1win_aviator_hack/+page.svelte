@@ -7,6 +7,7 @@
   $: isVerifying = false;
   $: inRequest = false;
   $: timeRemains = 0;
+  let loopStarted = false
   let delayText = '';
   let timer = 0;
   let waitingTexts = [
@@ -42,6 +43,7 @@
     }
     inRequest = false;
     delayText = '';
+    loopStarted = true;
     let fn = () => {
       timeRemains--;
       if (timeRemains <= 0) {
@@ -70,14 +72,14 @@
     User - {hideUserID(data.usr)}
   </span>
 </div>
-<div class="relative text-white mx-auto w-42 h-42 my-6">
-  <div class="w-full h-full flex items-center justify-center">{form?.coef || '0.00'}x</div>
-  <div class="absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-r-violet-600 border-l-rose-800 scale-[0.5] rotate-[90deg]" style="{form?.coef ? 'animation: spin 2s linear infinite; filter: blur(1px)' : ''}"></div>
-  <div class="absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-t-blue-600 border-b-pink-600 scale-[0.6] rotate-[75deg]" style="{form?.coef ? 'animation: spin 2s linear infinite; filter: blur(1px)' : ''}"></div>
-  <div class="absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-r-teal-600 border-l-yellow-600 scale-[0.7] rotate-[60deg]" style="{form?.coef ? 'animation: spin 2s linear infinite; filter: blur(1px)' : ''}"></div>
-  <div class="absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-t-fuchsia-600 border-b-indigo-600 scale-[0.8] rotate-[45deg]" style="{form?.coef ? 'animation: spin 2s linear infinite; filter: blur(1px)' : ''}"></div>
-  <div class="absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-r-red-400 border-l-lime-400 scale-[0.9] rotate-[30deg]" style="{form?.coef ? 'animation: spin 2s linear infinite; filter: blur(1px)' : ''}"></div>
-  <div class="absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-t-cyan-400 border-b-amber-400 rotate-[15deg]" style="{form?.coef ? 'animation: spin 2s linear infinite; filter: blur(1px)' : ''}"></div>
+<div class="relative text-white mx-auto w-42 h-42 my-8">
+  <div class="cf w-full h-full flex items-center justify-center text-2xl font-bold rounded-full {form?.coef ? 'active' : ''}">{form?.coef?.toFixed(2) || '0.00'}x</div>
+  <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-r-violet-600 border-l-rose-800 scale-[0.5] rotate-[90deg] {form?.coef ? 'active' : ''}"></div>
+  <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-t-blue-600 border-b-pink-600 scale-[0.6] rotate-[75deg] {form?.coef ? 'active' : ''}"></div>
+  <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-r-teal-600 border-l-yellow-600 scale-[0.7] rotate-[60deg] {form?.coef ? 'active' : ''}"></div>
+  <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-t-fuchsia-600 border-b-indigo-600 scale-[0.8] rotate-[45deg] {form?.coef ? 'active' : ''}"></div>
+  <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-r-red-400 border-l-lime-400 scale-[0.9] rotate-[30deg] {form?.coef ? 'active' : ''}"></div>
+  <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-t-cyan-400 border-b-amber-400 rotate-[15deg] {form?.coef ? 'active' : ''}"></div>
 </div>
 <form id="sigForm" action="?/getSignal" method="post" use:enhance={()=>{
   inRequest = true
@@ -88,7 +90,7 @@
 }}>
   <div class="text-white text-center">{delayText}</div>
   <button id="sigFormBtn" type="submit" class="hidden" aria-label="submit"></button>
-  <button disabled="{form?.coef || inRequest}" type="button" class="block w-[350px] mx-auto py-3 my-5 rounded-xl text-2xl text-white font-bold cursor-pointer hover:saturate-150 active:scale-75 transition duration-300 ease-out disabled:cursor-not-allowed disabled:opacity-30 shadow hover:shadow-cyan-400 scale-90" style="background: linear-gradient(93.73deg,#108de7,#0855c4);font-family: 'Orbitron', monospace;" on:click={startSignalLoop}>Start Signal</button>
+  <button disabled="{inRequest}" type="button" class="block w-[350px] mx-auto py-3 my-5 rounded-xl text-2xl text-white font-bold cursor-pointer hover:saturate-150 active:scale-75 transition duration-300 ease-out disabled:cursor-not-allowed disabled:opacity-30 shadow hover:shadow-cyan-400 scale-90" style="background: linear-gradient(93.73deg,#108de7,#0855c4);font-family: 'Orbitron', monospace;" on:click={()=>{loopStarted ? (()=>{document.querySelector('#sigFormBtn').click();timeRemains = 60})() : startSignalLoop()}}>{loopStarted ? 'Refresh Signal' : 'Start Signal'}</button>
   {#if timeRemains}
   <div class="max-w-[350px] w-[calc(100%-30px)] h-5 mx-auto rounded-2xl bg-cyan-950 relative overflow-hidden">
     <div role="progressbar" class="w-full h-full bg-cyan-700 transition ease-out duration-300" style="transform: translateX({timeRemains/60*100 - 100}%);"></div>
@@ -182,4 +184,33 @@ return async ({ result, update }) => {
     to { box-shadow: 0px 0px 0px 0px theme(--color-cyan-600); }
   }
   .verify-alert { animation: getAttention 3s ease-out forwards; }
+  .ld.active {
+    animation: spin 2s linear infinite;
+    filter: contrast(150%) saturate(500%);
+  }
+  .cf::after {
+    content: " ";
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    border-radius: calc(infinity * 1px);
+    overflow: hidden;
+    /* border: 5px dotted theme(--color-cyan-400); */
+    outline: 5px dotted theme(--color-cyan-400);
+    outline-offset: -3px;
+    box-shadow: 0px 0px 20px 8px theme(--color-cyan-800), inset 0px 0px 20px 8px theme(--color-cyan-800);
+    scale: 1.2;
+    opacity: 0;
+    transition: all 300ms linear;
+    animation: coefAnim 10s linear infinite;
+  }
+  .cf.active::after {
+    opacity: 1;
+  }
+  @keyframes coefAnim {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
 </style>
