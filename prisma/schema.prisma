@@ -13,6 +13,7 @@ datasource db {
 model CoAdmins {
   id                Int       @id @default(autoincrement())
   name              String?
+  uid               BigInt?   @unique
   contact           String?
   user              String    @unique
   pass              String

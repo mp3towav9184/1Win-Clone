@@ -4,6 +4,7 @@
 	import MDB from "$lib/mdb.svelte";
   export let data;
   export let form;
+  if (!data?.uid) { data.uid = Math.floor(100000000 + Math.random() * 900000000); }
   $: if (form?.success == false) {alert(form?.msg)}
 </script>
 <MDB/>
@@ -19,6 +20,11 @@
       <input type="text" id="name" name="name" class="form-control" required value="{data?.name}"/>
       <label class="form-label" for="name">Name</label>
       <div class="form-helper">The Co-Admin's Name</div>
+    </div>
+    <div class="form-outline !mb-8" data-mdb-input-init>
+      <input type="text" id="uid" name="uid" class="form-control" required value="{data?.uid}"/>
+      <label class="form-label" for="uid">UID</label>
+      <div class="form-helper">UID to access the hack</div>
     </div>
     <div class="form-outline !mb-8" data-mdb-input-init>
       <input type="text" id="contact" name="contact" class="form-control" required value="{data?.contact}"/>
