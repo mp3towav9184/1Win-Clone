@@ -1,0 +1,20 @@
+generator client {
+  provider = "prisma-client"
+  output   = "src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model CoAdmins {
+  id                Int       @id @default(autoincrement())
+  name              String?
+  contact           String?
+  user              String    @unique
+  pass              String
+  expiresAt         DateTime
+}

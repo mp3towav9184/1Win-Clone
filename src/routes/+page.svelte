@@ -24,6 +24,10 @@
     <a data-sveltekit-reload class="hack" href="/1win_mines_hack">Mines Hack</a>
     <a data-sveltekit-reload class="game !mt-10" href="/1win_aviator">Aviator Game</a>
     <a data-sveltekit-reload class="hack" href="/1win_aviator_hack">Aviator Hack</a>
+    {#if data.role == 'super'}
+    <a data-sveltekit-reload class="coa !mt-10" href="/co-admin-manager">Manage Co-Admins</a>
+    {/if}
+    <div class="mb-10"></div>
   </div>
 </div>
 
@@ -34,4 +38,5 @@
   a { @apply block max-w-96 w-full mx-auto text-slate-100 font-bold text-center mt-5 py-2 px-2 text-3xl outline-none rounded-xl transition ease-out duration-300 shadow active:scale-75; }
   a.game { @apply bg-cyan-700 hover:bg-cyan-500 hover:shadow-cyan-400; }
   a.hack { @apply bg-amber-700 hover:bg-amber-600 hover:shadow-amber-500; }
+  a.coa { @apply bg-emerald-600 hover:bg-emerald-500 hover:shadow-emerald-400; }
 </style>

@@ -1,25 +1,29 @@
 //@ts-nocheck
-import type { Handle } from '@sveltejs/kit';
+import { PASSWORD, USERNAME } from '$env/static/private';
+import { StringDEC } from '$lib/func';
+import prisma from '$lib/prisma';
+import { redirect, type Handle } from '@sveltejs/kit';
 
-const USERNAME = 'badman';
-const PASSWORD = '@badman69#';
-const B64CODE = btoa(USERNAME + ':' + PASSWORD);
-const BYPASS = ['/status', '/1win_mines_hack', '/1win_aviator_hack'];
+const BYPASS = ['/status', '/1win_mines_hack', '/1win_aviator_hack', '/login'];
 
 export const handle: Handle = async ({ event, resolve }) => {
-    let auth = event.cookies.get('auth');
-    event.locals.isAdmin = auth == B64CODE;
     if (BYPASS.indexOf(event.url.pathname)!=-1) {return resolve(event)}
-    
-	if (auth != B64CODE) {
-        let [_, encoded] = event.request.headers.get('Authorization')?.split(' ') || '';
-        if (encoded == B64CODE) {
-            event.cookies.set('auth', B64CODE, {maxAge: 7 * 24 * 60 * 60, path: '/'})
-            event.locals.isAdmin = true;
-        } else {
-            return new Response('Authentication required', {status: 401, headers: {'WWW-Authenticate': 'Basic realm="Restricted Area"'}});
+
+    let session = event.cookies.get('session');
+    let role : 'super' | 'co-admin' = null;
+    try {
+        let [user, pass] = StringDEC(session).split(':');
+        let coa = await prisma.coAdmins.findFirst({ where: { user: user, pass: pass } });
+        let isSuper = user == USERNAME && pass == PASSWORD;
+        if (isSuper) {
+            role = 'super';
+        } else if (coa && coa.expiresAt - new Date() > 0) {
+            role = 'co-admin';
         }
-	}
+    } catch {}
+
+    if (!role) redirect(302, '/login');
+    event.locals.role = role;
 
 	return resolve(event);
 };

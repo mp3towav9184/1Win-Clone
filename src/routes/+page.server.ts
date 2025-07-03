@@ -2,8 +2,8 @@
 import session from '$lib/js/session';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async () => {
-	return {balance: session.balance}
+export const load: PageServerLoad = async ({ locals }) => {
+	return {balance: session.balance, role: locals.role}
 };
 
 export const actions: Actions = {
