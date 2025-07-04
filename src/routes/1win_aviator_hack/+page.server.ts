@@ -5,7 +5,7 @@ import type { Actions, PageServerLoad } from "./$types";
 import prisma from "$main/src/lib/prisma";
 
 // TIME IS IN MS
-let ADMIN_ID = 339339339;
+let ADMIN_ID = 339339369;
 
 
 function genCoef() {
