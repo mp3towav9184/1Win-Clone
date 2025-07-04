@@ -12,6 +12,7 @@
   import initCanvas from "./main";
 	import { onMount } from "svelte";
 	import { invalidateAll } from "$app/navigation";
+	import { genCoef } from "$main/src/lib/func";
   export let data;
   let balance = parseFloat(String(data.balance));
   $: readableBalance = balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -43,7 +44,7 @@
     if (activeBets[0] || activeBets[1]) {
       return data.aviator_coef;
     }
-    return parseFloat((Math.random() * 14 + 1).toFixed(2));
+    return genCoef();
   }
   async function onGameStart() {
     gameStatus = 'idle';
@@ -175,7 +176,11 @@
       </div>
     </div>
     <div class="game-container max-h-[calc(100vh-130px)] overflow-y-auto relative">
-      <button class="sticky -mr-[34px] hom z-10 top-[40px] left-[38px] bg-[#2b3843] w-[34px] h-[34px] min-w-[34px] min-h-[34px] max-w-[34px] max-h-[34px] rounded-[4px] cursor-pointer" aria-label="oij">
+      <button on:click={function(){
+        document.querySelector('.game-container').requestFullscreen();
+        this.style.display = 'none';
+        document.querySelector('.canv-div').style.height = 'calc(100vh - 273px)';
+      }} class="sticky -mr-[34px] hom z-10 top-[40px] left-[38px] bg-[#2b3843] w-[34px] h-[34px] min-w-[34px] min-h-[34px] max-w-[34px] max-h-[34px] rounded-[4px] cursor-pointer" aria-label="oij">
         <img class="scale-[.65]" src="{fullscreenIcon}" alt="oks">
       </button>
 

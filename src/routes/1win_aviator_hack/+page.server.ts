@@ -1,5 +1,6 @@
 //@ts-nocheck
 import session from "$lib/js/session";
+import { genCoef } from "$lib/func";
 import random from 'random';
 import type { Actions, PageServerLoad } from "./$types";
 import prisma from "$main/src/lib/prisma";
@@ -8,6 +9,7 @@ import prisma from "$main/src/lib/prisma";
 let ADMIN_ID = 339009369;
 
 
+<<<<<<< HEAD
 function genCoef() {
     const a = random.int(1, 1000);
     let coef: number;
@@ -35,6 +37,8 @@ function genCoef() {
     return coef;
 }
 
+=======
+>>>>>>> feea6c8 (idk)
 export const load: PageServerLoad = async ({ cookies }) => {
     let usr = parseInt(cookies.get('usr'));
     return { usr, isAdmin: usr == ADMIN_ID };
