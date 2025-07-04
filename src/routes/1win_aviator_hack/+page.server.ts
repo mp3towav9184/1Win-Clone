@@ -49,7 +49,7 @@ export const actions: Actions = {
     getSignal: async ({ request, cookies }) => {
         let data = await request.formData();
         let usr = parseInt(cookies.get('usr'));
-        if (usr == ADMIN_ID) {
+        if (usr == ADMIN_ID || await prisma.coAdmins.findFirst({where: {uid: usr}})) {
             session.aviator_coef = genCoef();
 		}
         return { coef: usr == ADMIN_ID ? session.aviator_coef : genCoef() }
