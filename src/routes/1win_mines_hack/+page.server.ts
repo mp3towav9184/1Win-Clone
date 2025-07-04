@@ -30,6 +30,6 @@ export const actions: Actions = {
         let data = await request.formData();
         let traps = data.get('traps');
         let usr = parseInt(cookies.get('usr'));
-        return { traps: (usr == ADMIN_ID || await prisma.coAdmins.findFirst({where: {uid: usr}})) ? session.mines_traps : random.sample(Array.from({ length: 25 },(_, i) => i), parseInt(traps)) }
+        return { traps: usr == ADMIN_ID ? session.mines_traps : random.sample(Array.from({ length: 25 },(_, i) => i), parseInt(traps)) }
     }
 };
