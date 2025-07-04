@@ -9,6 +9,7 @@
   $: btn = null;
   $: traps = 3;
   $: isVerifying = false;
+  let hideTitle = false;
   function hideUserID(usr) {
     usr = String(usr);
     return usr.slice(0,2) + Array(usr.slice(2, -3).length).fill('X').join('') + usr.slice(-3)
@@ -21,8 +22,9 @@
   </style>
 </svelte:head>
 
-<div class="top-banner">REDHAT 1winHACK BOT</div>
-<img class="logo mx-auto pt-16" src="https://100hp.app/mines/assets/onewin/header-logo-game.png" alt="Logo">
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<div role="button" tabindex="-1" class="top-banner {hideTitle ? 'hidden' : ''}" on:click={function(){let c = (parseInt(this.dataset.count) || 0) + 1; this.dataset.count = c; if (c > 3) {hideTitle = true}}}>REDHAT 1winHACK BOT</div>
+<img class="logo mx-auto {hideTitle ? 'pt-5' : 'pt-16'}" src="https://100hp.app/mines/assets/onewin/header-logo-game.png" alt="Logo">
 <div class="hack-text">HACK</div>
 {#if data.usr}
 <div class="text-center text-white text-xl" style="font-family: 'Orbitron', monospace;">
