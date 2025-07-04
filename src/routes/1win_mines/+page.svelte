@@ -162,7 +162,12 @@
       </div>
     </div>
     <div class="game-container max-h-[calc(100vh-130px)] overflow-y-auto relative">
-      <button class="sticky hom z-10 top-[40px] left-[55px] bg-[#2b3843] w-[34px] h-[34px] min-w-[34px] min-h-[34px] max-w-[34px] max-h-[34px] rounded-[4px] cursor-pointer" aria-label="oij">
+      <button on:click={function(){
+        document.querySelector('.game-container').requestFullscreen();
+        this.style.display = 'none';
+        document.querySelector('.rewards').style.maxHeight = '100vh';
+        document.querySelector('.rewards > .relative').style.maxHeight = 'calc(100vh - 85px)';
+      }} class="sticky hom z-10 top-[40px] left-[55px] bg-[#2b3843] w-[34px] h-[34px] min-w-[34px] min-h-[34px] max-w-[34px] max-h-[34px] rounded-[4px] cursor-pointer" aria-label="oij">
         <img class="scale-[.65]" src="{fullscreenIcon}" alt="oks">
       </button>
       <div class="finalWin absolute ml-[8px] z-30 top-0 left-0 w-[calc(100%-8px)] h-full backdrop-blur-[2px] backdrop-brightness-50 rounded-2xl flex items-center justify-center transition ease-in-out duration-300 {isFinalWinShown ? '' : 'opacity-0 invisible'}">
