@@ -26,7 +26,12 @@
   export let data;
   export let form;
   $: readableBalance = data.balance.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-  $: bet = 0.2;
+  $: min_bet = data.all_currencies[data.currency].mines_min;
+  $: max_bet = data.all_currencies[data.currency].mines_max;
+  $: sign = data.all_currencies[data.currency].sign;
+  let bet = data.all_currencies[data.currency].mines_default;
+  $: if (bet < min_bet) {bet = min_bet}
+  $: if (bet > max_bet) {bet = max_bet}
   $: traps = 3;
   $: rewards = [];
   $: win = [];
@@ -147,9 +152,20 @@
   </div>
   <div class="header-bottom">
     <img class="block h-full py-0 -ml-[10px]" src="{headerBottomLeft}" alt="hbl">
-    <div class="relative h-full py-[1px] ml-auto">
+    <div class="relative h-full py-[1px] ml-auto flex">
+      <div class="bg-[rgb(35,45,69)] rounded-[10px] p-[2px] pl-[10px] flex items-center justify-center m-[2px] h-[calc(100%-4px)]">
+        <div class="flex flex-col pr-[3px]">
+          <div class="text-[rgb(148,166,205)] flex items-center justify-center ml-auto">
+            <span class="text-[12px] px-[2px]">{data.currency}</span>
+            <svg class="fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" role="presentation" width="12" height="12"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.726 6.614a.953.953 0 000-1.337.928.928 0 00-1.252-.065l-.07.065L8 8.717l-3.403-3.44a.928.928 0 00-1.252-.065l-.071.065a.953.953 0 00-.064 1.265l.064.072 4.065 4.11a.928.928 0 001.251.064l.071-.065 4.065-4.109z"></path></svg>
+          </div>
+          <div class="text-[14px] font-bold text-white overflow-hidden text-right text-ellipsis whitespace-nowrap" style="letter-spacing: .75px;">{readableBalance}</div>
+        </div>
+        <div class="flex items-center justify-center pl-[3px] h-full">
+          <button class="text-white flex items-center rounded-[8px] cursor-pointer h-full justify-center px-[12px] text-[13px]" style="letter-spacing: -.2px;background: linear-gradient(89deg, rgb(49, 188, 105), rgb(8, 158, 78));">Deposit</button>
+        </div>
+      </div>
       <img class="block h-full" src="{headerBottomRight}" alt="hbr">
-      <span class="absolute right-[220px] bottom-[5px] text-[14px] font-bold" style="color: rgb(255, 255, 255);letter-spacing: 1px;">{readableBalance}</span>
     </div>
   </div>
   <div class="xbl-side">
@@ -173,7 +189,7 @@
       <div class="finalWin absolute ml-[8px] z-30 top-0 left-0 w-[calc(100%-8px)] h-full backdrop-blur-[2px] backdrop-brightness-50 rounded-2xl flex items-center justify-center transition ease-in-out duration-300 {isFinalWinShown ? '' : 'opacity-0 invisible'}">
         <div class="flex flex-col items-center justify-center my-auto">
           <img class="max-w-[480px] fwimg w-[calc(100%-24px)]  px-[12px]" src="{minesYouWon}" alt="win">
-          <div class="text-white font-bold text-4xl rotate-x-[50deg] fwam mt-[-100px] py-2" style="letter-spacing: -.3px;">{bet * data.coef[traps].at(-1)} $</div>
+          <div class="text-white font-bold text-4xl rotate-x-[50deg] fwam mt-[-100px] py-2" style="letter-spacing: -.3px;">{bet * data.coef[traps].at(-1)} {sign}</div>
           <button class="rounded-[8px] text-2xl px-8 py-2 text-center text-white cursor-pointer uppercase mt-5 hover:brightness-75 transition ease-in-out duration-300" style="background: linear-gradient(272.98deg,#fdbb4e 2.23%,#f56719 95.05%)" on:click={()=>{isFinalWinShown = false}}>Take</button>
         </div>
       </div>
@@ -184,7 +200,7 @@
               <span class="text-[#97a3cb] text-[12px]">Your win</span>
               <span>
                 <span class="text-[#13f36c] text-[16px] font-bold" style="letter-spacing: -.15px;">{func_win_amount}</span>
-                <span class="text-[10px] font-bold" style="color: hsla(0,0%,100%,.188);">$</span>
+                <span class="text-[10px] font-bold" style="color: hsla(0,0%,100%,.188);">{sign}</span>
               </span>
             </div>
             <div class="right-part" style="align-items: center;background: rgba(42,49,69,.7);border-radius: 20px 12px 12px 20px;color: #fff;display: flex;flex-direction: column;font-family: Halvar Breit XBd,sans-serif;font-size: 18px;font-style: normal;font-weight: 700;justify-content: center;line-height: 16px;padding: 16px;text-align: center;">
@@ -202,7 +218,7 @@
           </button>
           <button class="bg-[#151b2e] rounded-[8px] text-[#fafafa] text-[13px] p-[5px] px-[11px] flex gap-2 cursor-not-allowed" aria-label="on">
             <svg class="mt-[3px]" width="16" height="16" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20"><g fill="#97A3CB" fill-rule="evenodd" clip-path="url(#wallet_svg__a)" clip-rule="evenodd"><path d="M1.492 2.056C.12 3.487.082 4.937.01 9.087a52 52 0 0 0 0 1.826c.073 4.15.11 5.6 1.483 7.03 1.373 1.432 3.454 1.432 7.615 1.432h.932c3.83 0 5.745 0 7.04-1.114q.385-.331.696-.74c.742-.973.959-1.651 1.022-3.771H16.03c-1.949 0-3.529-1.679-3.529-3.75s1.58-3.75 3.53-3.75h2.752c-.091-2.34-.386-3.15-1.337-4.16C16.067.624 13.848.624 9.412.624h-.305c-4.161 0-6.242 0-7.615 1.431M3.875 3.75a.75.75 0 0 0 0 1.5h4.75a.75.75 0 0 0 0-1.5z"></path><path d="M13.75 10c0-1.38 1.053-2.5 2.353-2.5h2.573c.731 0 1.324.63 1.324 1.406v2.188c0 .776-.593 1.406-1.323 1.406h-2.574c-1.3 0-2.353-1.12-2.353-2.5M15 10a1.25 1.25 0 1 1 2.5 0 1.25 1.25 0 0 1-2.5 0"></path></g><defs><clipPath id="wallet_svg__a"><path fill="#fff" d="M0 0h20v20H0z"></path></clipPath></defs></svg>
-            <span class="mt-[1px]">{readableBalance.replaceAll(',', '')} $</span>
+            <span class="mt-[1px]">{readableBalance.replaceAll(',', '')} {sign}</span>
           </button>
           <button class="bg-[#151b2e] rounded-[8px] text-[#fafafa] text-[13px] p-[5px] px-[11px] flex gap-1 cursor-pointer" aria-label="lok">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3.3457 12.0002C3.3457 16.7775 7.22294 20.6547 12.0002 20.6547C16.7776 20.6547 20.6548 16.7775 20.6548 12.0002C20.6548 7.22288 16.7776 3.34564 12.0002 3.34564C7.22294 3.34564 3.3457 7.22288 3.3457 12.0002ZM10.9184 17.4093V16.9766C10.9184 16.4986 11.3059 16.1111 11.7839 16.1111H12.2166C12.6946 16.1111 13.0821 16.4986 13.0821 16.9766V17.4093C13.0821 17.8873 12.6946 18.2747 12.2166 18.2747H11.7839C11.3059 18.2747 10.9184 17.8873 10.9184 17.4093ZM13.8783 12.1473C13.415 12.617 13.081 13.0245 12.94 13.736C12.9335 13.7688 12.9273 13.8066 12.9214 13.8493C12.8624 14.2775 12.4964 14.5966 12.0641 14.5966H12.0002C11.5425 14.5966 11.1715 14.2255 11.1715 13.7678C11.1715 13.7443 11.1725 13.7209 11.1745 13.6975C11.1817 13.613 11.1895 13.5491 11.1979 13.5057C11.3318 12.8161 11.6714 12.1972 12.1474 11.7146L13.2205 10.6241C13.5408 10.3126 13.7312 9.87982 13.7312 9.40382C13.7312 8.45182 12.9522 7.67291 12.0002 7.67291C11.3953 7.67291 10.8603 7.98741 10.5506 8.46097C10.4958 8.54475 10.4463 8.65701 10.4021 8.79775C10.2888 9.15843 9.95445 9.40382 9.57639 9.40382H9.40388C8.99575 9.40382 8.66489 9.07296 8.66489 8.66483C8.66489 8.60989 8.67101 8.55513 8.68317 8.50156C8.73551 8.27051 8.79491 8.08375 8.86137 7.94128C9.41236 6.7601 10.6103 5.94201 12.0002 5.94201C13.9129 5.94201 15.4621 7.49117 15.4621 9.40382C15.4621 10.1654 15.1505 10.8578 14.6572 11.3511L13.8783 12.1473Z" fill="#97A3CB"></path></svg>
@@ -238,7 +254,7 @@
               <svg width="32" height="32" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12.2752 2.2285C12.6529 1.48818 13.7108 1.48818 14.0885 2.2285L16.735 7.41481C16.8829 7.70466 17.1604 7.90633 17.4818 7.95743L23.2321 8.87169C24.0529 9.0022 24.3798 10.0082 23.7924 10.5963L19.6778 14.7159C19.4478 14.9461 19.3418 15.2724 19.3925 15.5938L20.2999 21.3452C20.4294 22.1662 19.5736 22.7879 18.8329 22.4111L13.6434 19.7708C13.3534 19.6232 13.0103 19.6232 12.7203 19.7708L7.53081 22.4111C6.79004 22.7879 5.93424 22.1662 6.06377 21.3452L6.97119 15.5938C7.0219 15.2724 6.91588 14.9461 6.68592 14.7159L2.57124 10.5963C1.98389 10.0082 2.31077 9.0022 3.1316 8.87169L8.88187 7.95743C9.20324 7.90633 9.48081 7.70466 9.62872 7.41481L12.2752 2.2285Z" fill="#C22A20"></path><path d="M12.2752 2.2285C12.6529 1.48818 13.7108 1.48818 14.0885 2.2285L16.735 7.41481C16.8829 7.70466 17.1604 7.90633 17.4818 7.95743L23.2321 8.87169C24.0529 9.0022 24.3798 10.0082 23.7924 10.5963L19.6778 14.7159C19.4478 14.9461 19.3418 15.2724 19.3925 15.5938L20.2999 21.3452C20.4294 22.1662 19.5736 22.7879 18.8329 22.4111L13.6434 19.7708C13.3534 19.6232 13.0103 19.6232 12.7203 19.7708L7.53081 22.4111C6.79004 22.7879 5.93424 22.1662 6.06377 21.3452L6.97119 15.5938C7.0219 15.2724 6.91588 14.9461 6.68592 14.7159L2.57124 10.5963C1.98389 10.0082 2.31077 9.0022 3.1316 8.87169L8.88187 7.95743C9.20324 7.90633 9.48081 7.70466 9.62872 7.41481L12.2752 2.2285Z" fill="url(#paint0_linear_448_8887status)"></path><path d="M12.2754 2.22809C12.6531 1.48777 13.711 1.48777 14.0887 2.22809L16.7352 7.4144C16.8831 7.70426 17.1607 7.90592 17.482 7.95702L23.2323 8.87128C24.0531 9.00179 24.38 10.0078 23.7927 10.5959L19.678 14.7155C19.448 14.9457 19.342 15.272 19.3927 15.5934L20.3001 21.3448C20.4297 22.1658 19.5739 22.7875 18.8331 22.4107L13.6436 19.7704C13.3536 19.6228 13.0105 19.6228 12.7205 19.7704L7.53102 22.4107C6.79025 22.7875 5.93445 22.1658 6.06398 21.3448L6.9714 15.5934C7.02211 15.272 6.91609 14.9457 6.68613 14.7155L2.57145 10.5959C1.9841 10.0078 2.31098 9.00179 3.13181 8.87128L8.88208 7.95702C9.20345 7.90592 9.48102 7.70426 9.62893 7.4144L12.2754 2.22809Z" fill="url(#paint1_linear_448_8887status)"></path><path d="M12.2754 2.22809C12.6531 1.48777 13.711 1.48777 14.0887 2.22809L16.7352 7.4144C16.8831 7.70426 17.1607 7.90592 17.482 7.95702L23.2323 8.87128C24.0531 9.00179 24.38 10.0078 23.7927 10.5959L19.678 14.7155C19.448 14.9457 19.342 15.272 19.3927 15.5934L20.3001 21.3448C20.4297 22.1658 19.5739 22.7875 18.8331 22.4107L13.6436 19.7704C13.3536 19.6228 13.0105 19.6228 12.7205 19.7704L7.53102 22.4107C6.79025 22.7875 5.93445 22.1658 6.06398 21.3448L6.9714 15.5934C7.02211 15.272 6.91609 14.9457 6.68613 14.7155L2.57145 10.5959C1.9841 10.0078 2.31098 9.00179 3.13181 8.87128L8.88208 7.95702C9.20345 7.90592 9.48102 7.70426 9.62893 7.4144L12.2754 2.22809Z" fill="url(#paint2_radial_448_8887status)"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M16.433 7.56862L13.7865 2.38231C13.5347 1.88876 12.8294 1.88876 12.5776 2.38231L9.93115 7.56862C9.73395 7.95509 9.36385 8.22398 8.93536 8.29211L3.18509 9.20637C2.63787 9.29338 2.41995 9.96407 2.81151 10.3561L6.92619 14.4757C7.23281 14.7827 7.37417 15.2177 7.30655 15.6463L6.39914 21.3977C6.31278 21.945 6.88331 22.3595 7.37716 22.1082L12.5666 19.468C12.9533 19.2712 13.4108 19.2712 13.7975 19.468L18.9869 22.1082C19.4808 22.3595 20.0513 21.945 19.965 21.3977L19.0576 15.6463C18.9899 15.2177 19.1313 14.7827 19.4379 14.4757L23.5526 10.3561C23.9442 9.96407 23.7262 9.29338 23.179 9.20637L17.4287 8.29211C17.0003 8.22398 16.6302 7.95509 16.433 7.56862ZM14.0887 2.22809C13.711 1.48777 12.6531 1.48777 12.2754 2.22809L9.62893 7.4144C9.48102 7.70426 9.20345 7.90592 8.88208 7.95702L3.13181 8.87128C2.31098 9.00179 1.9841 10.0078 2.57145 10.5959L6.68613 14.7155C6.91609 14.9457 7.02211 15.272 6.9714 15.5934L6.06398 21.3448C5.93445 22.1658 6.79025 22.7875 7.53102 22.4107L12.7205 19.7704C13.0105 19.6228 13.3536 19.6228 13.6436 19.7704L18.8331 22.4107C19.5739 22.7875 20.4297 22.1658 20.3001 21.3448L19.3927 15.5934C19.342 15.272 19.448 14.9457 19.678 14.7155L23.7927 10.5959C24.38 10.0078 24.0531 9.00179 23.2323 8.87128L17.482 7.95702C17.1607 7.90592 16.8831 7.70426 16.7352 7.4144L14.0887 2.22809Z" fill="url(#paint3_linear_448_8887status)"></path><path d="M12.741 7.3195C12.937 6.98075 13.4261 6.98075 13.6221 7.3195L15.1721 9.99846C15.2442 10.123 15.3656 10.2113 15.5063 10.2413L18.5331 10.8876C18.9159 10.9693 19.067 11.4344 18.8054 11.7255L16.7365 14.0275C16.6403 14.1345 16.594 14.2773 16.6089 14.4204L16.9296 17.4988C16.9701 17.8881 16.5745 18.1755 16.2168 18.0167L13.3882 16.7604C13.2566 16.702 13.1065 16.702 12.975 16.7604L10.1464 18.0167C9.7887 18.1755 9.39305 17.8881 9.4336 17.4988L9.75428 14.4204C9.7692 14.2773 9.72281 14.1345 9.62661 14.0275L7.55775 11.7255C7.29613 11.4344 7.44726 10.9693 7.83001 10.8876L10.8568 10.2413C10.9976 10.2113 11.119 10.123 11.1911 9.99846L12.741 7.3195Z" fill="url(#paint4_linear_448_8887status)"></path><path d="M19.6431 11.3076C13.5027 17.1102 8.01855 14.5437 6.04404 12.5351C3.04056 8.07161 9.63153 11.6424 15.4716 10.0802C20.1437 8.83037 20.1993 10.3777 19.6431 11.3076Z" fill="url(#paint5_linear_448_8887status)"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M12.486 3.38311C12.6114 3.44656 12.6616 3.59966 12.5981 3.72506L11.8786 5.14712C11.8152 5.27252 11.6621 5.32275 11.5367 5.2593C11.4113 5.19585 11.3611 5.04275 11.4245 4.91735L12.144 3.49529C12.2075 3.36989 12.3606 3.31966 12.486 3.38311Z" fill="#F9BE76"></path><circle cx="3.68131" cy="9.52742" r="0.254474" fill="#F9BE76"></circle><circle cx="11.3155" cy="5.62557" r="0.254474" fill="#F9BE76"></circle><path d="M10.7514 8.25268C8.82111 10.9869 9.51093 12.4755 10.0971 12.8781C11.8774 13.6816 15.1214 8.94033 15.3409 7.68564C15.5604 6.43095 13.1642 4.83492 10.7514 8.25268Z" fill="url(#paint6_linear_448_8887status)" fill-opacity="0.6"></path><defs><linearGradient id="paint0_linear_448_8887status" x1="13.1818" y1="0.45166" x2="18.8651" y2="22.4213" gradientUnits="userSpaceOnUse"><stop stop-color="#FBA416" stop-opacity="0"></stop><stop offset="1" stop-color="#FDBB4E" stop-opacity="0.63"></stop></linearGradient><linearGradient id="paint1_linear_448_8887status" x1="13.182" y1="0.451259" x2="18.8653" y2="22.4209" gradientUnits="userSpaceOnUse"><stop stop-color="#FDBB4E" stop-opacity="0"></stop><stop offset="1" stop-color="#FDBB4E" stop-opacity="0.63"></stop></linearGradient><radialGradient id="paint2_radial_448_8887status" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(10.2132 9.86681) rotate(52.6712) scale(14.8278)"><stop offset="0.738765" stop-color="#9CB6DD" stop-opacity="0"></stop><stop offset="0.89825" stop-color="#C6F1FF" stop-opacity="0.37"></stop><stop offset="1" stop-color="#EFFBFF" stop-opacity="0.7"></stop></radialGradient><linearGradient id="paint3_linear_448_8887status" x1="20.3073" y1="17.4162" x2="8.6015" y2="6.81312" gradientUnits="userSpaceOnUse"><stop stop-color="#FEFFD3" stop-opacity="0.63"></stop><stop offset="0.218803" stop-color="#FAFD4E" stop-opacity="0"></stop><stop offset="0.491108" stop-color="#FDFF8B" stop-opacity="0.56"></stop><stop offset="0.733041" stop-color="#F7F990"></stop><stop offset="1" stop-color="white" stop-opacity="0"></stop><stop offset="1" stop-color="#FEFFB7" stop-opacity="0"></stop></linearGradient><linearGradient id="paint4_linear_448_8887status" x1="13.1816" y1="6.55811" x2="13.0119" y2="17.8398" gradientUnits="userSpaceOnUse"><stop stop-color="#FEFFB0"></stop><stop offset="0.277442" stop-color="white" stop-opacity="0.51"></stop><stop offset="1" stop-color="#FAFD4E" stop-opacity="0.15"></stop></linearGradient><linearGradient id="paint5_linear_448_8887status" x1="12.635" y1="10.8612" x2="12.551" y2="14.8707" gradientUnits="userSpaceOnUse"><stop stop-color="#FAFD4E" stop-opacity="0"></stop><stop offset="0.731853" stop-color="#FAFD4E" stop-opacity="0.46"></stop></linearGradient><linearGradient id="paint6_linear_448_8887status" x1="11.5105" y1="8.61842" x2="13.7636" y2="10.7449" gradientUnits="userSpaceOnUse"><stop offset="0.223958" stop-color="#FAFD4E" stop-opacity="0.35"></stop><stop offset="1" stop-color="#FAFD4E" stop-opacity="0"></stop></linearGradient></defs></svg>
               <div class="flex flex-col">
                 <span style="color: #13f36c;" class="text-[.75rem]">{gameStatus == 'playing' || (gameStatus == 'waiting' && steps != 0) || gameStatus == 'lost' || gameStatus == 'win' ? 'Next step' : 'Max.win'}</span>
-                <span class="text-[.875rem] text-[#f3f3f3] font-bold">{Math.round(data.coef[traps].at((gameStatus == 'playing' || (gameStatus == 'waiting' && steps != 0) || gameStatus == 'lost' || gameStatus == 'win') && steps<25-traps ? steps : -1) * bet * 100) / 100} <span class="text-[#858cab] font-normal">$</span></span>
+                <span class="text-[.875rem] text-[#f3f3f3] font-bold">{Math.round(data.coef[traps].at((gameStatus == 'playing' || (gameStatus == 'waiting' && steps != 0) || gameStatus == 'lost' || gameStatus == 'win') && steps<25-traps ? steps : -1) * bet * 100) / 100} <span class="text-[#858cab] font-normal">{sign}</span></span>
               </div>
             </div>
             {#if gameStatus == 'idle' || (gameStatus == 'waiting' && steps == 0) }
@@ -285,7 +301,7 @@
                 <input type="hidden" name="traps" bind:value={traps}>
                 <div class="w-full flex items-center justify-center {gameStatus == 'playing' || (gameStatus == 'waiting' && steps != 0) ? 'rotate-x-[35deg] translate-y-[-10px]' : ''}">
                   <input class="ml-auto w-[90px] text-right font-bold outline-0" type="text" autocomplete="off" maxlength="8" name="bet" bind:value={bet} readonly="{gameStatus == 'waiting' || gameStatus == 'playing'}">
-                  <span class="mr-auto w-[40px] text-[hsla(0,0%,100%,.251)] ml-2 mt-1">$</span>
+                  <span class="mr-auto w-[40px] text-[hsla(0,0%,100%,.251)] ml-2 mt-1">{sign}</span>
                 </div>
                 {#if gameStatus == 'playing' || (gameStatus == 'waiting' && steps != 0)}
                 <span class="text-[rgba(133,140,171,.6)] text-[11px] -mt-4 -mr-8">Your bid:</span>
@@ -297,7 +313,7 @@
             {#if (gameStatus == 'playing' && steps != 0) || (gameStatus == 'waiting' && steps !=0) || (gameStatus == 'win')}
               <input type="hidden" name="take" value="{Math.round(data.coef[traps].at(steps-1) * bet * 100) / 100}">
               <button disabled={(steps == 25 - traps) || isCellRequesting || gameStatus == 'waiting' || gameStatus == 'win'} type="submit" class="flex flex-col basis-1/3 rounded-[8px] text-[12px] p-[5px] text-center text-white cursor-pointer disabled:opacity-30 hover:opacity-80 disabled:cursor-not-allowed" style="background: linear-gradient(272.98deg,#fdbb4e 2.23%,#f56719 95.05%)">
-                <span class="font-bold">{Math.round(data.coef[traps].at(steps-1) * bet * 100) / 100} <span class="font-light">$</span></span>
+                <span class="font-bold">{Math.round(data.coef[traps].at(steps-1) * bet * 100) / 100} <span class="font-light">{sign}</span></span>
                 <span class="tmuy -mt-0.5">Take</span>
               </button>
             {:else}
@@ -348,7 +364,7 @@
           <svg width="13" height="13" fill="#ffffff" data-v-62d2d3c0="" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" aria-hidden="true" role="img" class="icon icon-chevron-left-bold sm margin square back-icon back-icon"><path d="M34.52 239.03L228.87 44.69c9.37-9.37 24.57-9.37 33.94 0l22.67 22.67c9.36 9.36 9.37 24.52.04 33.9L131.49 256l154.02 154.75c9.34 9.38 9.32 24.54-.04 33.9l-22.67 22.67c-9.37 9.37-24.57 9.37-33.94 0L34.52 272.97c-9.37-9.37-9.37-24.57 0-33.94z"></path></svg>
           <span class="text-[14px] mt-[-2px]">Back</span>
         </a>
-        <span class="mr-[12px] text-[14px] font-bold" style="letter-spacing: -.15px;">$ {readableBalance}</span>
+        <span class="mr-[12px] text-[14px] font-bold" style="letter-spacing: -.15px;">{data.currency} {readableBalance}</span>
         <button class="h-[28px] px-[12px] text-[14px] font-semibold rounded-[8px] cursor-pointer" style="background-image: linear-gradient(89deg, rgb(49, 188, 105), rgb(8, 158, 78))">Deposit</button>
       </div>
     </div>

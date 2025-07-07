@@ -9,6 +9,13 @@ const BYPASS = ['/status', '/1win_mines_hack', '/1win_aviator_hack', '/login'];
 export const handle: Handle = async ({ event, resolve }) => {
     if (BYPASS.indexOf(event.url.pathname)!=-1) {return resolve(event)}
 
+    if (!event.cookies.get('balance')) {
+        event.cookies.set('balance', String(parseFloat(Math.floor(Math.random() * (8000 - 1050 + 1)) + 1050 + Math.random())), { path: '/', maxAge: 30 * 24 * 60 * 60 })
+    }
+    if (!event.cookies.get('currency')) {
+        event.cookies.set('currency', 'USD', { path: '/', maxAge: 30 * 24 * 60 * 60 })
+    }
+    
     let session = event.cookies.get('session');
     let role : 'super' | 'co-admin' = null;
     try {

@@ -16,20 +16,25 @@
   export let data;
   let balance = parseFloat(String(data.balance));
   $: readableBalance = balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  let bets = [1, 1];
+  let crate = data.all_currencies[data.currency].crate;
+  let min_bet = data.all_currencies[data.currency].aviator_min;
+  let max_bet = data.all_currencies[data.currency].aviator_max;
+  let default_bet = data.all_currencies[data.currency].aviator_default;
+  let multiplys = data.all_currencies[data.currency].multiplys;
+  let bets = [default_bet, default_bet];
   let activeBets = [false, false];
   let runningBets = [false, false];
-  $: if (bets[0] > 100) { bets[0] = 100 }
-  $: if (bets[1] > 100) { bets[1] = 100 }
-  $: if (bets[0] < 0) { bets[0] = 0 }
-  $: if (bets[1] < 0) { bets[1] = 0 }
+  $: if (bets[0] > max_bet) { bets[0] = max_bet }
+  $: if (bets[1] > max_bet) { bets[1] = max_bet }
+  $: if (bets[0] < min_bet) { bets[0] = min_bet }
+  $: if (bets[1] < min_bet) { bets[1] = min_bet }
   let gameStatus : 'idle' | 'playing' | 'ended' = 'idle';
   let gmCoef = 1;
   let totalPeople = 3;
   let totalPeopleWin = 0; // Doller
   let remainingPeople = 0;
   let dList = Array.from({length: 3}).map(_=>Math.floor(Math.random() * 70) + 1);
-  $: betHistory = Array.from({length: totalPeople > 20 ? 20 : totalPeople}).map(_=>({player: 'd***' + parseInt(Math.random()*9), bet: 100, x: null, win: null, av: Math.floor(Math.random() * 70) + 1}));
+  $: betHistory = Array.from({length: totalPeople > 20 ? 20 : totalPeople}).map(_=>({player: 'd***' + parseInt(Math.random()*9), bet: parseFloat((Math.random() * (5000 - 80) + 80).toFixed(2)) , x: null, win: null, av: Math.floor(Math.random() * 70) + 1}));
   let lastBbtnclk = 0;
   let coefHistory = Array.from({length: 40}).map(_ => (Math.random() * (11 - 1) + 1).toFixed(2));
   let _winCoef = 1;
@@ -161,9 +166,20 @@
   </div>
   <div class="header-bottom">
     <img class="block h-full py-0 -ml-[10px]" src="{headerBottomLeft}" alt="hbl">
-    <div class="relative h-full py-[1px] ml-auto">
+    <div class="relative h-full py-[1px] ml-auto flex">
+      <div class="bg-[rgb(35,45,69)] rounded-[10px] p-[2px] pl-[10px] flex items-center justify-center m-[2px] h-[calc(100%-4px)]">
+        <div class="flex flex-col pr-[3px]">
+          <div class="text-[rgb(148,166,205)] flex items-center justify-center ml-auto">
+            <span class="text-[12px] px-[2px]">{data.currency}</span>
+            <svg class="fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" role="presentation" width="12" height="12"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.726 6.614a.953.953 0 000-1.337.928.928 0 00-1.252-.065l-.07.065L8 8.717l-3.403-3.44a.928.928 0 00-1.252-.065l-.071.065a.953.953 0 00-.064 1.265l.064.072 4.065 4.11a.928.928 0 001.251.064l.071-.065 4.065-4.109z"></path></svg>
+          </div>
+          <div class="text-[14px] font-bold text-white overflow-hidden text-right text-ellipsis whitespace-nowrap" style="letter-spacing: .75px;">{readableBalance}</div>
+        </div>
+        <div class="flex items-center justify-center pl-[3px] h-full">
+          <button class="text-white flex items-center rounded-[8px] cursor-pointer h-full justify-center px-[12px] text-[13px]" style="letter-spacing: -.2px;background: linear-gradient(89deg, rgb(49, 188, 105), rgb(8, 158, 78));">Deposit</button>
+        </div>
+      </div>
       <img class="block h-full" src="{headerBottomRight}" alt="hbr">
-      <span class="absolute right-[220px] bottom-[5px] text-[14px] font-bold" style="color: rgb(255, 255, 255);letter-spacing: 1px;">{readableBalance}</span>
     </div>
   </div>
   <div class="xbl-side">
@@ -190,7 +206,7 @@
           <div class="text-[20px] leading-none flex items-center justify-center mt-[3px]">{_winCoef.toFixed(2)}x</div>
         </div>
         <div class="wcl bg-[#4eaf11] w-full px-[26px] font-bold rounded-[23px] flex items-center justify-center overflow-hidden relative min-w-[120px] ml-auto h-full flex-col">
-          <div class="whitespace-nowrap text-[14px] z-[2] leading-none" style="text-shadow: 0 1px 2px rgba(0,0,0,.5);">Win USD</div>
+          <div class="whitespace-nowrap text-[14px] z-[2] leading-none" style="text-shadow: 0 1px 2px rgba(0,0,0,.5);">Win {data.currency}</div>
           <div class="mt-[2px] min-w-[60px] flex justify-center items-center h-[16px] text-[20px] font-bold z-[2] leading-none" style="text-shadow: 0 1px 2px rgba(0,0,0,.5);">{_winUSD.toFixed(2)}</div>
         </div>
         <button class="px-[8px] text-[#d2d2d2] cursor-pointer bg-transparent border-0 outline-0 text-2xl font-bold opacity-50 leading-none scale-y-75" style="text-shadow: 0 1px 0 #97a4ae;">x</button>
@@ -199,7 +215,7 @@
       <div class="game-area bg-[#0e0e0e] w-full h-full relative pt-[40px]">
         <div class="header bg-[#1b1c1d] w-full h-[40px] absolute top-0 left-0 flex items-center p-[4px]">
           <div class="mx-[4px] w-[84px] h-full hicon mr-auto"></div>
-          <div class="text-[#9b9c9e] text-[15px] mr-[4px]"><span class="font-bold text-[#28a909] text-[15px]">{readableBalance}</span> USD</div>
+          <div class="text-[#9b9c9e] text-[15px] mr-[4px]"><span class="font-bold text-[#28a909] text-[15px]">{readableBalance}</span> {data.currency}</div>
           <div class="m-[4px]"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"><path d="M7.3476 8.4539c-.3555 0-.6426-.294-.6426-.6495 0-.3623.2803-.6494.6426-.6494h9.2969a.6448.6448 0 0 1 .6494.6494c0 .3555-.2871.6495-.6494.6495H7.3476Zm0 4.1972c-.3555 0-.6426-.2939-.6426-.6494 0-.3623.2803-.6494.6426-.6494h9.2969a.6448.6448 0 0 1 .6494.6494c0 .3555-.2871.6494-.6494.6494H7.3476Zm0 4.1973c-.3555 0-.6426-.294-.6426-.6494 0-.3623.2803-.6494.6426-.6494h9.2969a.6448.6448 0 0 1 .6494.6494c0 .3554-.2871.6494-.6494.6494H7.3476Z" fill="#767B85"/></svg></div>
           <div style="margin: 4px;width: 24px;height: 24px;cursor: pointer;background: url(https://aviator-next.spribegaming.com/chat.61cb237360b103af.svg) no-repeat center center;"></div>
         </div>
@@ -223,7 +239,7 @@
                 <div class="mr-auto">
                   <span class="text-[#ccc]">{remainingPeople}/{totalPeople}</span> Bets
                 </div>
-                <div>Total win USD</div>
+                <div>Total win {data.currency}</div>
               </div>
               <div class="line3 w-full min-h-[8px] bg-[#2b2b2b80] rounded-[32px] overflow-hidden p-[2px]" role="progressbar">
                 <div class="w-0 h-full bg-[#427f00] transition duration-300 ease-in-out rounded-[32px]" style="width: {(1-remainingPeople/totalPeople)*100}%;"></div>
@@ -231,9 +247,9 @@
             </div>
             <div class="bet-head flex p-[4px] mb-[4px] justify-center items-center text-[#7b7b7b] text-[10px]" style="letter-spacing: -.2px;">
               <span class="h-[12px] w-full px-[4px] whitespace-nowrap min-w-[92px] ml-0 text-left">Player</span>
-              <span class="h-[12px] w-full px-[4px] whitespace-nowrap min-w-[72px] ml-[4px] text-right">Bet USD</span>
+              <span class="h-[12px] w-full px-[4px] whitespace-nowrap min-w-[72px] ml-[4px] text-right">Bet {data.currency}</span>
               <span class="h-[12px] w-full px-[4px] whitespace-nowrap min-w-[72px] ml-[4px] text-right">X</span>
-              <span class="h-[12px] w-full px-[4px] whitespace-nowrap min-w-[72px] ml-[4px] text-right">Win USD</span>
+              <span class="h-[12px] w-full px-[4px] whitespace-nowrap min-w-[72px] ml-[4px] text-right">Win {data.currency}</span>
             </div>
             <div class="bet-list flex h-full flex-col overflow-hidden">
               {#each betHistory as h}
@@ -294,27 +310,26 @@
                   <div class="m-auto flex justify-center gap-2 items-center pt-2 w-full">
                     <div class="bet-block flex flex-col justify-center items-center text-center w-[140px] {activeBets[i] ? 'opacity-60 prvntcur' : ''}">
                       <div class="h-[32px] text-[16px] text-center flex justify-between items-center rounded-[32px] bg-[#141516] font-bold p-1">
-                        <button on:click={()=>{bets[i] = bets[i] - 0.1}} aria-label="minus" class="rounded-full w-[24px] h-[24px] cursor-pointer text-[#000000b3] text-center font-bold" style="background: #2c2d30 url(https://aviator-demo.spribegaming.com/minus-grey.337d79958d035ae8.svg) no-repeat center center;"></button>
-                        <input type="text" inputmode="decimal" placeholder="0.1" class="w-[calc(100%-35px)] border-0 outline-0 bg-transparent text-[#ccc] font-bold text-center" value={bets[i].toFixed(2)} on:focusout={function () {bets[i] = parseFloat(this.value)}}>
-                        <button on:click={()=>{bets[i] = bets[i] + 0.1}} aria-label="plus" class="rounded-full w-[24px] h-[24px] cursor-pointer text-[#000000b3] text-center font-bold" style="background: #2c2d30 url(https://aviator-demo.spribegaming.com/plus-grey.5bf167adc606b769.svg) no-repeat center center;"></button>
+                        <button on:click={()=>{bets[i] = bets[i] - crate}} aria-label="minus" class="rounded-full w-[24px] h-[24px] cursor-pointer text-[#000000b3] text-center font-bold" style="background: #2c2d30 url(https://aviator-demo.spribegaming.com/minus-grey.337d79958d035ae8.svg) no-repeat center center;"></button>
+                        <input type="text" inputmode="decimal" placeholder="{min_bet}" class="w-[calc(100%-35px)] border-0 outline-0 bg-transparent text-[#ccc] font-bold text-center" value={bets[i].toFixed(2)} on:focusout={function () {bets[i] = parseFloat(this.value)}}>
+                        <button on:click={()=>{bets[i] = bets[i] + crate}} aria-label="plus" class="rounded-full w-[24px] h-[24px] cursor-pointer text-[#000000b3] text-center font-bold" style="background: #2c2d30 url(https://aviator-demo.spribegaming.com/plus-grey.5bf167adc606b769.svg) no-repeat center center;"></button>
                       </div>
                       <div class="flex flex-wrap gap-1 justify-center text-[14px] mt-1 text-[#9ea0a3]">
-                        <button class="w-[68px] h-[24px] bg-[#141516] cursor-pointer rounded-[64px] text-[#83878e] text-center" on:click={()=>{if (lastBbtnclk != '1' + i){bets[i] = 0;}; bets[i] = bets[i] + 1; lastBbtnclk = '1' + i}}>1</button>
-                        <button class="w-[68px] h-[24px] bg-[#141516] cursor-pointer rounded-[64px] text-[#83878e] text-center" on:click={()=>{if (lastBbtnclk != '2' + i){bets[i] = 0;}; bets[i] = bets[i] + 2; lastBbtnclk = '2' + i}}>2</button>
-                        <button class="w-[68px] h-[24px] bg-[#141516] cursor-pointer rounded-[64px] text-[#83878e] text-center" on:click={()=>{if (lastBbtnclk != '5' + i){bets[i] = 0;}; bets[i] = bets[i] + 5; lastBbtnclk = '5' + i}}>5</button>
-                        <button class="w-[68px] h-[24px] bg-[#141516] cursor-pointer rounded-[64px] text-[#83878e] text-center" on:click={()=>{if (lastBbtnclk != '10' + i){bets[i] = 0;}; bets[i] = bets[i] + 10; lastBbtnclk = '10' + i}}>10</button>
+                        {#each multiplys as m}
+                        <button class="w-[68px] h-[24px] bg-[#141516] cursor-pointer rounded-[64px] text-[#83878e] text-center" on:click={()=>{if (lastBbtnclk != String(m) + i){bets[i] = 0;}; bets[i] = bets[i] + m; lastBbtnclk = String(m) + i}}>{m.toLocaleString()}</button>
+                        {/each}
                       </div>
                     </div>
                     {#if !activeBets[i]}
                     <button class="betbtngn max-w-[calc(100%-148px)] w-full flex flex-col justify-center items-center outline-4 outline-[#141516] text-[#fafafa] h-full min-h-[80px] text-[22px] cursor-pointer bg-[#28a909] border-1 border-[#b2f2a3] text-center rounded-[12px] p-2 hover:bg-[#36cb12] active:border-[#1c7430] active:translate-y-[1px] transition duration-300 ease-in-out" style="font-variant-numeric: lining-nums tabular-nums;" on:click={()=>{activeBets[i] = true; balance-=bets[i]; playSound('click'); invalidateAll()}}>
                       <span>Bet</span>
-                      <span>{bets[i].toFixed(2)} USD</span>
+                      <span>{bets[i].toFixed(2)} {data.currency}</span>
                     </button>
                     {:else}
                       {#if runningBets[i] && gameStatus == 'playing'}
                       <button class="betbtngnco max-w-[calc(100%-148px)] w-full flex flex-col justify-center items-center outline-4 outline-[#141516] text-[#fafafa] h-full min-h-[80px] text-[22px] cursor-pointer bg-[#d07206] border-1 border-[#ffbd71] text-center rounded-[12px] p-2 hover:bg-[#f58708] active:border-[#c69500] active:translate-y-[1px] transition duration-300 ease-in-out" style="font-variant-numeric: lining-nums tabular-nums;" on:click={()=>{showWinAlert(i)}}>
                         <span>Cash Out</span>
-                        <span>{(bets[i] * gmCoef).toFixed(2)} USD</span>
+                        <span>{(bets[i] * gmCoef).toFixed(2)} {data.currency}</span>
                       </button>
                       {:else}
                       <button class="betbtngncl max-w-[calc(100%-148px)] w-full flex flex-col justify-center items-center outline-4 outline-[#141516] text-[#fafafa] h-full min-h-[80px] text-[22px] cursor-pointer bg-[#cb011a] border-1 border-[#ff7171] text-center rounded-[12px] p-2 hover:bg-[#f7001f] active:border-[#b21f2d] active:translate-y-[1px] transition duration-300 ease-in-out" style="font-variant-numeric: lining-nums tabular-nums;" on:click={()=>{activeBets[i] = false; balance+=bets[i]; playSound('click')}}>
@@ -338,7 +353,7 @@
           <svg width="13" height="13" fill="#ffffff" data-v-62d2d3c0="" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" aria-hidden="true" role="img" class="icon icon-chevron-left-bold sm margin square back-icon back-icon"><path d="M34.52 239.03L228.87 44.69c9.37-9.37 24.57-9.37 33.94 0l22.67 22.67c9.36 9.36 9.37 24.52.04 33.9L131.49 256l154.02 154.75c9.34 9.38 9.32 24.54-.04 33.9l-22.67 22.67c-9.37 9.37-24.57 9.37-33.94 0L34.52 272.97c-9.37-9.37-9.37-24.57 0-33.94z"></path></svg>
           <span class="text-[14px] mt-[-2px]">Back</span>
         </a>
-        <span class="mr-[12px] text-[14px] font-bold" style="letter-spacing: -.15px;">$ {readableBalance}</span>
+        <span class="mr-[12px] text-[14px] font-bold" style="letter-spacing: -.15px;">{data.currency} {readableBalance}</span>
         <button class="h-[28px] px-[12px] text-[14px] font-semibold rounded-[8px] cursor-pointer" style="background-image: linear-gradient(89deg, rgb(49, 188, 105), rgb(8, 158, 78))">Deposit</button>
       </div>
     </div>
