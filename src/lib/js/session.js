@@ -7,7 +7,8 @@ export default {
 		BDT: { sign: 'Tk', mines_default: 100, mines_min: 10, mines_max: 20000, aviator_default: 10, aviator_min: 10, aviator_max: 10000, multiplys: [100, 200, 500, 10000], crate: 10 },
 		INR: { sign: '₹', mines_default: 100, mines_min: 10, mines_max: 16000, aviator_default: 10, aviator_min: 10, aviator_max: 8000, multiplys: [100, 200, 500, 1000], crate: 1 },
 		NGN: { sign: '₦', mines_default: 100, mines_min: 10, mines_max: 10000, aviator_default: 30, aviator_min: 30, aviator_max: 30000, multiplys: [100, 200, 500, 10000], crate: 30 },
-		ZAR: { sign: 'R', mines_default: 100, mines_min: 5, mines_max: 1000, aviator_default: 2, aviator_min: 2, aviator_max: 1800, multiplys: [10, 20, 50, 100], crate: 2 }
+		ZAR: { sign: 'R', mines_default: 100, mines_min: 5, mines_max: 1000, aviator_default: 2, aviator_min: 2, aviator_max: 1800, multiplys: [10, 20, 50, 100], crate: 2 },
+		PKR: { sign: 'Rs', mines_default: 100, mines_min: 10, mines_max: 18000, aviator_default: 16, aviator_min: 16, aviator_max: 16000, multiplys: [64, 160, 320, 1600], crate: 16 },
 	},
 	coef: {
 		1: [
