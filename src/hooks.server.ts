@@ -10,7 +10,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     if (BYPASS.indexOf(event.url.pathname)!=-1) {return resolve(event)}
 
     if (!event.cookies.get('balance')) {
-        event.cookies.set('balance', String(parseFloat(Math.floor(Math.random() * (8000 - 1050 + 1)) + 1050 + Math.random())), { path: '/', maxAge: 30 * 24 * 60 * 60 })
+        event.cookies.set('balance', parseFloat(Math.floor(Math.random() * (8000 - 1050 + 1)) + 1050 + Math.random()).toFixed(2), { path: '/', maxAge: 30 * 24 * 60 * 60 })
     }
     if (!event.cookies.get('currency')) {
         event.cookies.set('currency', 'USD', { path: '/', maxAge: 30 * 24 * 60 * 60 })

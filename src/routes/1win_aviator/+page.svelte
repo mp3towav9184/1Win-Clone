@@ -173,7 +173,7 @@
             <span class="text-[12px] px-[2px]">{data.currency}</span>
             <svg class="fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" role="presentation" width="12" height="12"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.726 6.614a.953.953 0 000-1.337.928.928 0 00-1.252-.065l-.07.065L8 8.717l-3.403-3.44a.928.928 0 00-1.252-.065l-.071.065a.953.953 0 00-.064 1.265l.064.072 4.065 4.11a.928.928 0 001.251.064l.071-.065 4.065-4.109z"></path></svg>
           </div>
-          <div class="text-[14px] font-bold text-white overflow-hidden text-right text-ellipsis whitespace-nowrap" style="letter-spacing: .75px;">{readableBalance}</div>
+          <div class="text-[14px] font-bold text-white overflow-hidden text-right text-ellipsis whitespace-nowrap" style="letter-spacing: .75px;">{balance.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</div>
         </div>
         <div class="flex items-center justify-center pl-[3px] h-full">
           <button class="text-white flex items-center rounded-[8px] cursor-pointer h-full justify-center px-[12px] text-[13px]" style="letter-spacing: -.2px;background: linear-gradient(89deg, rgb(49, 188, 105), rgb(8, 158, 78));">Deposit</button>
