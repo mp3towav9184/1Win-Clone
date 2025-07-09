@@ -36,12 +36,12 @@
   $: rewards = [];
   $: win = [];
   $: loss = [];
-  $: steps = 0;
+  $: steps = win.length + loss.length;
   let gameStatus: 'idle' | 'playing' | 'waiting' | 'win' | 'lost' = 'idle';
   $: isCellRequesting = false;
   $: list25 = Array.from({ length: 25 }, (_, i) => i);
-  $: if (typeof form?.win == typeof 5) {win = [...win, form?.win]; list25 = list25}
-  $: if (typeof form?.loss == typeof 5) {loss = [...loss, form?.loss]; list25 = list25}
+  $: if (typeof form?.win == typeof 5) {win = [...new Set([...win, form?.win])]; list25 = list25}
+  $: if (typeof form?.loss == typeof 5) {loss = [...new Set([...loss, form?.loss])]; list25 = list25}
   $: func_win_amount = 0;
   $: func_coef_x = 0;
   $: func_alert_show = false;
@@ -50,7 +50,7 @@
   $: allowAudio = false;
   $: isBlendShowable = false;
   $: blendX = 40;
-  $: console.log(steps, traps)
+  // $: console.log(steps, traps, win.length + loss.length);
   $: if (steps == 25 - traps) { invalidateAll();endGame('win') }
   function generateRandomArray() {
     let name = Math.random().toString(36).substring(2, 8);
@@ -227,7 +227,7 @@
           </button>
         </div> 
         <div class="gameblocks">
-          <form class="flex justify-center align-middle w-full mt-20 mb-10" action="?/cellClick" method="post" use:enhance={()=>{ isCellRequesting = true; return async ({result, update})=>{ isCellRequesting = false; steps++; await update(); if (result.data?.win) {playSound('starSnd')}; if (result.data?.loss) {endGame('lost')} }}}>
+          <form class="flex justify-center align-middle w-full mt-20 mb-10" action="?/cellClick" method="post" use:enhance={()=>{ isCellRequesting = true; return async ({result, update})=>{ isCellRequesting = false; await update(); if (result.data?.win) {playSound('starSnd')}; if (result.data?.loss) {endGame('lost')} }}}>
             <input type="hidden" name="steps" value="{steps}">
             <input type="hidden" name="traps" value="{traps}">
             <input type="hidden" name="bet" value="{bet}">
