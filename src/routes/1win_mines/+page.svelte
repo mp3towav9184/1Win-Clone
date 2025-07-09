@@ -50,6 +50,7 @@
   $: allowAudio = false;
   $: isBlendShowable = false;
   $: blendX = 40;
+  $: console.log(steps == 25 - traps)
   $: if (steps == 25 - traps) { invalidateAll();endGame('win') }
   function generateRandomArray() {
     let name = Math.random().toString(36).substring(2, 8);
