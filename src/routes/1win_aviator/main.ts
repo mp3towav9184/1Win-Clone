@@ -144,7 +144,7 @@ export default async function init() {
       ctx.fill();
       ctx.beginPath();
       ctx.roundRect(-pw/2, 15 - (isMobile ? 5 : 0), pw*idleProgress/100, ph, 1e3);
-      idleProgress-=.1.111111111;
+      idleProgress-=.6;
       if (idleProgress <= 0) {
         idleProgress = 100;
         window.targetCoef = window.getCoef();
