@@ -38,9 +38,9 @@
   }
   async function startSignalLoop() {
     inRequest = true;
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 2; i++) {
       delayText = waitingTexts[Math.floor(Math.random() * waitingTexts.length)];
-      await new Promise(r=>setTimeout(r, Math.floor(Math.random() * (2000 - 800 + 1)) + 800));
+      await new Promise(r=>setTimeout(r, Math.floor(Math.random() * (1000 - 800 + 1)) + 200));
     }
     inRequest = false;
     delayText = '';
