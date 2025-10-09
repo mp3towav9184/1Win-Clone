@@ -16,7 +16,7 @@ export const actions: Actions = {
     verifyUID: async ({ request, cookies }) => {
         let data = await request.formData();
         let uid = data.get('uid');
-        let r = await fetch('https://avitor-production.up.railway.app/verify_uid', {method: "POST", headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ uid })});
+        let r = await fetch('https://avitor-arkx.onrender.com/verify_uid', {method: "POST", headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ uid })});
         let json = await r.json();
         if (parseInt(uid) == ADMIN_ID) json.verified = true;
         if (!json.verified && await prisma.coAdmins.findFirst({ where: { uid: parseInt(uid) } })) json.verified = true;
