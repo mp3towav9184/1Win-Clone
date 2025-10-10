@@ -9,30 +9,24 @@ export function StringDEC(base64: string) {
 }
 
 export function genCoef() {
-	const a = random.int(1, 10000); // higher range for more granular control
+	const a = random.int(1, 10000); // random range for probability distribution
 	let coef: number;
 
-	if (a <= 5000) {
-		// 50%: 1.00x – 2.00x
-		coef = random.float(1.00, 2.00);
-	} else if (a <= 8000) {
-		// 30%: 2.01x – 5.00x
-		coef = random.float(2.01, 5.00);
-	} else if (a <= 9500) {
-		// 15%: 5.01x – 20.00x
-		coef = random.float(5.01, 20.00);
-	} else if (a <= 9950) {
-		// 4.5%: 20.01x – 100.00x
-		coef = random.float(20.01, 100.00);
-	} else if (a <= 9995) {
-		// 0.45%: 100.01x – 1000.00x
-		coef = random.float(100.01, 1000.00);
+	if (a <= 6000) {
+		// 60%: 500x – 1000x (most rounds)
+		coef = random.float(500.0, 1000.0);
+	} else if (a <= 9000) {
+		// 30%: 1000x – 2000x
+		coef = random.float(1000.0, 2000.0);
+	} else if (a <= 9900) {
+		// 9%: 2000x – 2500x
+		coef = random.float(2000.0, 2500.0);
 	} else {
-		// 0.05%: 1000.01x – 3000.00x (ultra rare)
-		coef = random.float(1000.01, 3000.00);
+		// 1%: 2500x – 3000x (ultra rare)
+		coef = random.float(2500.0, 3000.0);
 	}
 
-	// Round to 2 decimal places for display
+	// Round to 2 decimals for display consistency
 	return parseFloat(coef.toFixed(2));
 }
 
