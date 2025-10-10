@@ -9,30 +9,30 @@ export function StringDEC(base64: string) {
 }
 
 export function genCoef() {
-	const a = Math.random() * 100; // percentage chance
+	const a = random.int(1, 10000); // higher range for more granular control
 	let coef: number;
 
-	if (a <= 40) {
-		// 40% chance -> 1.00x – 2.00x
-		coef = (Math.random() * (2.0 - 1.0) + 1.0);
-	} else if (a <= 70) {
-		// 30% chance -> 2.01x – 5.00x
-		coef = (Math.random() * (5.0 - 2.01) + 2.01);
-	} else if (a <= 90) {
-		// 20% chance -> 5.01x – 20.00x
-		coef = (Math.random() * (20.0 - 5.01) + 5.01);
-	} else if (a <= 98) {
-		// 8% chance -> 20.01x – 100.00x
-		coef = (Math.random() * (100.0 - 20.01) + 20.01);
-	} else if (a <= 99.8) {
-		// 1.8% chance -> 100.01x – 1000.00x
-		coef = (Math.random() * (1000.0 - 100.01) + 100.01);
+	if (a <= 5000) {
+		// 50%: 1.00x – 2.00x
+		coef = random.float(1.00, 2.00);
+	} else if (a <= 8000) {
+		// 30%: 2.01x – 5.00x
+		coef = random.float(2.01, 5.00);
+	} else if (a <= 9500) {
+		// 15%: 5.01x – 20.00x
+		coef = random.float(5.01, 20.00);
+	} else if (a <= 9950) {
+		// 4.5%: 20.01x – 100.00x
+		coef = random.float(20.01, 100.00);
+	} else if (a <= 9995) {
+		// 0.45%: 100.01x – 1000.00x
+		coef = random.float(100.01, 1000.00);
 	} else {
-		// 0.2% chance -> 1000.01x – 3000.00x (super rare)
-		coef = (Math.random() * (3000.0 - 1000.01) + 1000.01);
+		// 0.05%: 1000.01x – 3000.00x (ultra rare)
+		coef = random.float(1000.01, 3000.00);
 	}
 
-	// Limit to 2 decimal places
-	return Number(coef.toFixed(2));
+	// Round to 2 decimal places for display
+	return parseFloat(coef.toFixed(2));
 }
 
