@@ -13,17 +13,17 @@ export function genCoef() {
 	let coef: number;
 
 	if (a <= 200) {
-		// 20%: 1.50x – 1.90x
-		coef = random.int(150, 190) / 100;
+		// 20%: 3.50x – 4.49x
+		coef = random.int(350, 449) / 100;
 	} else if (a <= 700) {
-		// 50%: 1.91x – 2.90x
-		coef = random.int(191, 290) / 100;
+		// 50%: 4.50x – 6.49x
+		coef = random.int(450, 649) / 100;
 	} else if (a <= 900) {
-		// 20%: 2.91x – 3.40x
-		coef = random.int(291, 340) / 100;
+		// 20%: 6.50x – 7.99x
+		coef = random.int(650, 799) / 100;
 	} else {
-		// 10%: 3.41x – 3.90x
-		coef = random.int(341, 390) / 100;
+		// 10%: 8.00x – 8.99x
+		coef = random.int(800, 899) / 100;
 	}
 
 	return coef;
