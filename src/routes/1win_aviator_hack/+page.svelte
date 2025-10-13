@@ -39,13 +39,16 @@
 
   async function startSignalLoop() {
     inRequest = true;
+    // Only show 1-2 quick fake delays ONCE at start
     for (let i = 0; i < 2; i++) {
       delayText = waitingTexts[Math.floor(Math.random() * waitingTexts.length)];
-      await new Promise(r => setTimeout(r, Math.floor(Math.random() * (1000 - 800 + 1)) + 200));
+      await new Promise(r => setTimeout(r, Math.floor(Math.random() * 200) + 100));
     }
     inRequest = false;
     delayText = '';
     loopStarted = true;
+    timeRemains = 60;
+
     let fn = () => {
       timeRemains--;
       if (timeRemains <= 0) {
@@ -95,12 +98,11 @@
     </span>
   </div>
 
-  <!-- LARGER ANIMATION CIRCLE (240px) -->
+  <!-- LARGER ANIMATION CIRCLE -->
   <div class="relative mx-auto w-60 h-60 my-6">
     <div class="cf w-full h-full flex items-center justify-center text-4xl font-bold text-white">
       {form?.coef?.toFixed(2) || '0.00'}<span class="text-base">x</span>
     </div>
-    <!-- ENLARGED ANIMATED RINGS -->
     <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-r-violet-500 border-l-rose-700 scale-[0.55] rotate-[90deg] {form?.coef ? 'active' : ''}"></div>
     <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-t-blue-500 border-b-pink-500 scale-[0.65] rotate-[75deg] {form?.coef ? 'active' : ''}"></div>
     <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-r-teal-500 border-l-yellow-500 scale-[0.75] rotate-[60deg] {form?.coef ? 'active' : ''}"></div>
@@ -116,20 +118,23 @@
     use:enhance={() => {
       inRequest = true;
       return async ({ result, update }) => {
-        await update();
+        await update(); // Instant update — no artificial delay
         inRequest = false;
       };
     }}
   >
     <div class="text-white text-center text-xs min-h-[20px]">{delayText}</div>
     <button id="sigFormBtn" type="submit" class="hidden" aria-label="submit"></button>
+    
+    <!-- Slightly larger button -->
     <button
       disabled={inRequest}
       type="button"
-      class="block w-[280px] mx-auto py-2 my-4 rounded-lg text-base text-white font-bold cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 scale-95"
+      class="block w-[300px] mx-auto py-2.5 my-4 rounded-xl text-base text-white font-bold cursor-pointer disabled:cursor-not-allowed disabled:opacity-30"
       style="background: linear-gradient(93.73deg,#108de7,#0855c4); font-family: 'Orbitron', monospace;"
       on:click={() => {
         if (loopStarted) {
+          // IMMEDIATE click — no waiting
           document.querySelector('#sigFormBtn').click();
           timeRemains = 60;
         } else {
@@ -141,11 +146,12 @@
     </button>
 
     {#if timeRemains}
-      <div class="max-w-[280px] w-[calc(100%-30px)] h-2 mx-auto rounded-full bg-cyan-900/50 relative overflow-hidden">
+      <!-- Progress bar: fills from RIGHT to LEFT -->
+      <div class="max-w-[300px] w-[calc(100%-30px)] h-2 mx-auto rounded-full bg-cyan-900/50 relative overflow-hidden">
         <div
           role="progressbar"
-          class="h-full bg-cyan-500 transition-all duration-1000 ease-linear"
-          style="width: {100 - timeRemains / 60 * 100}%;"
+          class="h-full bg-cyan-500 origin-right transition-all duration-1000 ease-linear"
+          style="transform: scaleX({timeRemains / 60});"
         ></div>
         <span class="absolute inset-0 flex items-center justify-center text-[10px] text-white pointer-events-none">
           Auto: {timeRemains}s
@@ -245,7 +251,6 @@
   .cf {
     font-family: 'Orbitron', monospace;
     color: white;
-    /* NO GLOW — pure clean text */
   }
 
   .ld.active {
