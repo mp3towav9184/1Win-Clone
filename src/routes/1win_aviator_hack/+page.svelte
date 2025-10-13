@@ -70,7 +70,6 @@
 <div class="hack-text">HACK</div>
 
 {#if data.usr}
-<!-- ✅ Smaller "Logged in as" text -->
 <div class="text-center text-white text-lg" style="font-family: 'Orbitron', monospace;">
   Logged in as:
   <span class="text-[#00f0ff] text-shadow-cyan-600 text-shadow-md">
@@ -78,7 +77,6 @@
   </span>
 </div>
 
-<!-- ✅ Compact signal display: smaller circle + text -->
 <div class="relative text-white mx-auto w-52 h-52 my-6">
   <div class="cf w-full h-full flex items-center justify-center text-4xl font-bold rounded-full {form?.coef ? 'active' : ''}">
     {form?.coef?.toFixed(2) || '0.00'}x
@@ -190,9 +188,7 @@
     user-select: none;
     text-align: center;
   }
-  .cf {
-    text-shadow: 0 0 10px #00f0ff, 0 0 20px #0088ff;
-  }
+  /* ✅ NO TEXT GLOW on signal value — .cf has no text-shadow */
   @keyframes getAttention {
     from { box-shadow: 0px 0px 30px 20px theme(--color-cyan-600); }
     to { box-shadow: 0px 0px 0px 0px theme(--color-cyan-600); }
