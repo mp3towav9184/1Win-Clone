@@ -1,13 +1,13 @@
 <script lang="ts">
   //@ts-nocheck
-	import { enhance } from "$app/forms";
+  import { enhance } from "$app/forms";
   import minesCellsBg from "$lib/assets/mines-cells-bg.png";
   export let data;
   export let form;
   $: isVerifying = false;
   $: inRequest = false;
   $: timeRemains = 0;
-  let loopStarted = false
+  let loopStarted = false;
   let delayText = '';
   let timer = 0;
   let hideTitle = false;
@@ -56,6 +56,7 @@
     timer = setInterval(fn, 1000);
   }
 </script>
+
 <svelte:head>
   <title>1Win Aviator Hack</title>
   <style>
@@ -67,22 +68,29 @@
 <div role="button" tabindex="-1" class="top-banner {hideTitle ? 'hidden' : ''}" on:click={function(){let c = (parseInt(this.dataset.count) || 0) + 1; this.dataset.count = c; if (c > 3) {hideTitle = true}}}>AVIATOR PREDICTOR</div>
 <img class="logo mx-auto {hideTitle ? 'mt-6' : 'mt-20'} mb-3 rounded-full w-24 h-24" src="https://iili.io/FKNWLwQ.png" alt="Logo">
 <div class="hack-text">HACK</div>
+
 {#if data.usr}
-<div class="text-center text-white text-xl" style="font-family: 'Orbitron', monospace;">
+<!-- ✅ Smaller "Logged in as" text -->
+<div class="text-center text-white text-lg" style="font-family: 'Orbitron', monospace;">
   Logged in as:
   <span class="text-[#00f0ff] text-shadow-cyan-600 text-shadow-md">
     User - {hideUserID(data.usr)}
   </span>
 </div>
-<div class="relative text-white mx-auto w-60 h-60 my-8">
-  <div class="cf w-full h-full flex items-center justify-center text-4xl font-bold rounded-full {form?.coef ? 'active' : ''}">{form?.coef?.toFixed(2) || '0.00'}x</div>
-  <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-r-violet-600 border-l-rose-800 scale-[0.6] rotate-[90deg] {form?.coef ? 'active' : ''}"></div>
-  <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-t-blue-600 border-b-pink-600 scale-[0.7] rotate-[75deg] {form?.coef ? 'active' : ''}"></div>
-  <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-r-teal-600 border-l-yellow-600 scale-[0.8] rotate-[60deg] {form?.coef ? 'active' : ''}"></div>
-  <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-t-fuchsia-600 border-b-indigo-600 scale-[0.9] rotate-[45deg] {form?.coef ? 'active' : ''}"></div>
-  <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-r-red-400 border-l-lime-400 scale-[1.0] rotate-[30deg] {form?.coef ? 'active' : ''}"></div>
-  <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-t-cyan-400 border-b-amber-400 scale-[1.1] rotate-[15deg] {form?.coef ? 'active' : ''}"></div>
+
+<!-- ✅ Compact signal display: smaller circle + text -->
+<div class="relative text-white mx-auto w-52 h-52 my-6">
+  <div class="cf w-full h-full flex items-center justify-center text-4xl font-bold rounded-full {form?.coef ? 'active' : ''}">
+    {form?.coef?.toFixed(2) || '0.00'}x
+  </div>
+  <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-r-violet-600 border-l-rose-800 scale-[0.5] rotate-[90deg] {form?.coef ? 'active' : ''}"></div>
+  <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-t-blue-600 border-b-pink-600 scale-[0.6] rotate-[75deg] {form?.coef ? 'active' : ''}"></div>
+  <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-r-teal-600 border-l-yellow-600 scale-[0.7] rotate-[60deg] {form?.coef ? 'active' : ''}"></div>
+  <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-t-fuchsia-600 border-b-indigo-600 scale-[0.8] rotate-[45deg] {form?.coef ? 'active' : ''}"></div>
+  <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-r-red-400 border-l-lime-400 scale-[0.9] rotate-[30deg] {form?.coef ? 'active' : ''}"></div>
+  <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-t-cyan-400 border-b-amber-400 rotate-[15deg] {form?.coef ? 'active' : ''}"></div>
 </div>
+
 <form id="sigForm" action="?/getSignal" method="post" use:enhance={()=>{
   inRequest = true
   return async ({ result, update }) => {
@@ -100,14 +108,15 @@
   </div>
   {/if}
 </form>
+
 {:else}
 <form class="flex max-w-[300px] mx-auto py-7 flex-col gap-5" style="font-family: 'Orbitron', monospace;" action="?/verifyUID" method="post" use:enhance={()=>{
-form = undefined;
-isVerifying = true;
-return async ({ result, update }) => {
-  await update();
-  isVerifying = false;
-}
+  form = undefined;
+  isVerifying = true;
+  return async ({ result, update }) => {
+    await update();
+    isVerifying = false;
+  }
 }}>
   <input class="text-cyan-400 bg-cyan-950/50 hover:bg-cyan-950 focus:bg-cyan-950 outline-2 outline-transparent focus:outline-cyan-400 outline-offset-2 text-xl border border-cyan-600 px-3 py-2 rounded-xl transition duration-300 ease-in-out" type="number" name="uid" placeholder="Enter 1WIN UID" required>
   <button type="submit" disabled={isVerifying} class="text-white bg-cyan-600 shadow shadow-transparent hover:bg-cyan-400 hover:shadow-cyan-700 text-xl font-bold px-3 py-1 rounded-xl outline-2 outline-transparent outline-offset-2 active:scale-75 focus:outline-cyan-400 disabled:opacity-30 transition ease-in-out duration-300">
@@ -118,6 +127,7 @@ return async ({ result, update }) => {
     {/if}
   </button>
 </form>
+
 {#if form?.verified == false}
 <div role="alert" class="verify-alert bg-cyan-800 text-lg text-cyan-300 my-5 p-5 rounded-lg outline-2 outline-cyan-600 outline-offset-3 max-w-4xl w-[calc(100%-40px)] mx-auto" style="font-family: 'Orbitron', monospace;">
   <b>⚠️ Attention Needed: No Deposit Found!</b>
@@ -179,6 +189,9 @@ return async ({ result, update }) => {
     margin-bottom: 10px;
     user-select: none;
     text-align: center;
+  }
+  .cf {
+    text-shadow: 0 0 10px #00f0ff, 0 0 20px #0088ff;
   }
   @keyframes getAttention {
     from { box-shadow: 0px 0px 30px 20px theme(--color-cyan-600); }
