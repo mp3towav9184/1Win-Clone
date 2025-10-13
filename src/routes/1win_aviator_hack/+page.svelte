@@ -95,17 +95,17 @@
     </span>
   </div>
 
-  <!-- CLEAN SIGNAL DISPLAY (NO GLOW, PERFECT SIZE) -->
-  <div class="relative mx-auto w-40 h-40 my-6">
-    <div class="cf w-full h-full flex items-center justify-center text-4xl font-bold text-white rounded-full {form?.coef ? 'active' : ''}">
+  <!-- LARGER ANIMATION CIRCLE (240px) -->
+  <div class="relative mx-auto w-60 h-60 my-6">
+    <div class="cf w-full h-full flex items-center justify-center text-4xl font-bold text-white">
       {form?.coef?.toFixed(2) || '0.00'}<span class="text-base">x</span>
     </div>
-    <!-- Animated rings (keep "x" inside this area) -->
-    <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-r-violet-600 border-l-rose-800 scale-[0.5] rotate-[90deg] {form?.coef ? 'active' : ''}"></div>
-    <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-t-blue-600 border-b-pink-600 scale-[0.6] rotate-[75deg] {form?.coef ? 'active' : ''}"></div>
-    <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-r-teal-600 border-l-yellow-600 scale-[0.7] rotate-[60deg] {form?.coef ? 'active' : ''}"></div>
-    <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-t-fuchsia-600 border-b-indigo-600 scale-[0.8] rotate-[45deg] {form?.coef ? 'active' : ''}"></div>
-    <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-r-red-400 border-l-lime-400 scale-[0.9] rotate-[30deg] {form?.coef ? 'active' : ''}"></div>
+    <!-- ENLARGED ANIMATED RINGS -->
+    <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-r-violet-500 border-l-rose-700 scale-[0.55] rotate-[90deg] {form?.coef ? 'active' : ''}"></div>
+    <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-t-blue-500 border-b-pink-500 scale-[0.65] rotate-[75deg] {form?.coef ? 'active' : ''}"></div>
+    <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-r-teal-500 border-l-yellow-500 scale-[0.75] rotate-[60deg] {form?.coef ? 'active' : ''}"></div>
+    <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-t-fuchsia-500 border-b-indigo-500 scale-[0.85] rotate-[45deg] {form?.coef ? 'active' : ''}"></div>
+    <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-r-red-400 border-l-lime-400 scale-[0.95] rotate-[30deg] {form?.coef ? 'active' : ''}"></div>
     <div class="ld absolute w-full h-full top-0 left-0 rounded-full border-transparent border-2 border-t-cyan-400 border-b-amber-400 rotate-[15deg] {form?.coef ? 'active' : ''}"></div>
   </div>
 
@@ -244,12 +244,12 @@
 
   .cf {
     font-family: 'Orbitron', monospace;
-    /* NO GLOW — clean white text */
     color: white;
+    /* NO GLOW — pure clean text */
   }
 
   .ld.active {
-    animation: spin 2s linear infinite;
+    animation: spin 2.5s linear infinite;
   }
 
   @keyframes spin {
