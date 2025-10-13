@@ -12,7 +12,10 @@ export function genCoef() {
 	const a = random.int(1, 1000);
 	let coef: number;
 
-	if (a <= 200) {
+	if (a === 1) {
+		// Always one special case: exactly 3.50x
+		coef = 3.50;
+	} else if (a <= 200) {
 		// 20%: 1.50x – 1.90x
 		coef = random.int(150, 190) / 100;
 	} else if (a <= 700) {
